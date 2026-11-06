@@ -1,62 +1,54 @@
-# LexTALE 繁體中文版（LexTALE Traditional Chinese）
+# LexTALE Traditional Chinese
 
-> 由國立臺北科技大學（北科大）研究團隊開發的繁體中文詞彙判斷測驗，提供中文教育者一個快速評估學習者中文能力的工具。
+A Traditional Chinese lexical decision test, developed by a research team at National Taipei University of Technology (Taipei Tech), to give Chinese language educators a quick way to assess learners' Chinese proficiency.
 
-> ⚠️ **本專案仍在進行中。** 研究流程與整體設計尚在整理，下方標示「🚧 待補充」的段落將於確定後更新。
+> **Status: work in progress.** The research procedure and overall design are still being finalized. Sections marked **[TBD]** will be filled in once they are settled.
 
 ---
 
-## 專案簡介
+## About
 
-LexTALE（Lexical Test for Advanced Learners of English）是一種簡短的詞彙判斷測驗：受試者看到一串字詞，逐一判斷它是「真詞」還是「假詞」，再依作答結果估計其詞彙知識與整體語言能力。由於施測時間短、操作簡單，LexTALE 已被廣泛用於語言研究與教學現場，作為快速的語言能力指標。
+LexTALE (Lexical Test for Advanced Learners of English) is a short lexical decision test. Participants see a series of letter strings and decide for each one whether it is a real word or a nonword. Their responses are used to estimate vocabulary knowledge and, by extension, overall language proficiency. Because it is quick to administer and easy to take, LexTALE is widely used in language research and in the classroom as a fast proficiency measure.
 
-目前 LexTALE 已有英語及多種語言的版本，但仍缺少以**繁體中文**為對象、且適合臺灣及其他繁體中文使用環境的版本。本專案的目標就是研究並建立一套繁體中文版 LexTALE。
+Versions of LexTALE exist for English and several other languages, but there is not yet a version built for **Traditional Chinese** and suited to Taiwan and other Traditional Chinese-speaking contexts. This project aims to research and develop one.
 
-## 專案目標
+## Goals
 
-- 研究並開發一套**繁體中文版 LexTALE** 測驗。
-- 提供**中文教育者**一個快速、易於施測的方式，用以初步鑑定學習者的中文能力。
-- 讓研究者與教學者能以一致的工具評估受試者的中文詞彙程度。
+- Research and develop a **Traditional Chinese version of LexTALE**.
+- Give **Chinese language educators** a quick, easy-to-administer tool for an initial assessment of learners' Chinese proficiency.
+- Provide researchers and teachers with a consistent instrument for measuring Chinese vocabulary knowledge.
 
-## 研究團隊
+## Research Team
 
-本專案由**國立臺北科技大學**研究團隊執行。
+This project is carried out by a research team at **National Taipei University of Technology**, Taiwan.
 
-🚧 **待補充**：團隊成員、指導教授、所屬系所與聯絡方式。
+**[TBD]** Team members, advisor, department, and contact information.
 
-## 研究流程
+## Research Procedure
 
-🚧 **待補充**：研究流程尚在規劃中，確定後將說明各階段的工作內容與時程。
+**[TBD]** The research procedure is still being planned. This section will describe each phase of the work and its timeline.
 
-## 測驗設計
+## Test Design
 
-🚧 **待補充**：測驗設計細節尚在規劃中，預計將說明以下項目：
+**[TBD]** The test design is still being planned. This section is expected to cover:
 
-- 刺激材料（真詞與假詞）的選取與建構方式
-- 題目數量與呈現方式
-- 計分方式
-- 信效度驗證
+- How the stimuli (words and nonwords) are selected and constructed
+- Number of items and presentation format
+- Scoring
+- Reliability and validity
 
-## 使用方式
+## Usage
 
-🚧 **待補充**：測驗完成後，將在此說明施測方式與結果解讀。
+**[TBD]** Instructions for administering the test and interpreting the results will be added once the test is complete.
 
-## 專案結構
+## Repository Structure
 
-🚧 **待補充**：程式碼與資料檔案加入後，將在此說明目錄結構。
+**[TBD]** The directory layout will be documented once code and data are added.
 
-## 參考文獻
+## References
 
 - Lemhöfer, K., & Broersma, M. (2012). Introducing LexTALE: A quick and valid Lexical Test for Advanced Learners of English. *Behavior Research Methods, 44*(2), 325–343. https://doi.org/10.3758/s13428-011-0146-0
 
-## 授權
+## License
 
-🚧 **待補充**：授權條款尚未決定。
-
----
-
-## English Summary
-
-**LexTALE Traditional Chinese** is a research project by a team at **National Taipei University of Technology (Taipei Tech)**, Taiwan. Our goal is to develop a Traditional Chinese version of LexTALE, a short lexical decision test, so that Chinese language educators have a quick way to assess learners' Chinese proficiency.
-
-The research procedure and test design are still being finalized; sections marked 🚧 above will be filled in once they are settled.
+**[TBD]** The license has not been decided yet.
