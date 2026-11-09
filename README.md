@@ -43,7 +43,11 @@ This project is carried out by a research team at **National Taipei University o
 
 ## Repository Structure
 
-**[TBD]** The directory layout will be documented once code and data are added.
+**[TBD]** The full directory layout will be documented once more code and data are added.
+
+| Path | Contents |
+| --- | --- |
+| `stimuli/tools/pseudo-character-maker/` | Browser tool used to build pseudo-characters and render item images |
 
 ## References
 
