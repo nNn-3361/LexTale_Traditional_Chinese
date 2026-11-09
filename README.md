@@ -47,6 +47,8 @@ This project is carried out by a research team at **National Taipei University o
 
 | Path | Contents |
 | --- | --- |
+| `AGENTS.md` | Rules for changing this repository with AI assistants (read this first) |
+| `docs/PROJECT_LOG.md` | One-line log of every change |
 | `stimuli/tools/pseudo-character-maker/` | Browser tool used to build pseudo-characters and render item images |
 
 ## References
