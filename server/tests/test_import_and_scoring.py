@@ -39,10 +39,12 @@ def test_bad_item_list_reports_all_problems(tmp_path, media_dir, db):
         w.writerow(["item_id", "lexicality", "char", "image"])
         w.writerow(["R1", "real", "", "missing.png"])
         w.writerow(["R1", "word", "", "x.png"])
+        w.writerow(["R2", "pseudo", "", "../outside.png"])
     with pytest.raises(cli.CliError) as e:
         cli.import_bank(db, p, tmp_path, "v0", None, media_dir)
     msg = str(e.value)
-    for part in ("real item without char", "duplicate item_id", "lexicality must be", "image not found"):
+    for part in ("real item without char", "duplicate item_id", "lexicality must be", "image not found",
+                 "must be inside"):
         assert part in msg
 
 

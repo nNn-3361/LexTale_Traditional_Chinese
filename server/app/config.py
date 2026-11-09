@@ -18,13 +18,20 @@ class Settings:
     consent_version: str
 
 
+def _require(name: str) -> str:
+    value = os.environ.get(name)
+    if not value:
+        raise RuntimeError(
+            f"{name} is not set. Example: "
+            "mysql+pymysql://USER:PASSWORD@127.0.0.1:3306/lextale?charset=utf8mb4"
+        )
+    return value
+
+
 def get_settings() -> Settings:
     web_dist = os.environ.get("WEB_DIST")
     return Settings(
-        database_url=os.environ.get(
-            "DATABASE_URL",
-            "mysql+pymysql://lextale:lextale@127.0.0.1:3306/lextale?charset=utf8mb4",
-        ),
+        database_url=_require("DATABASE_URL"),
         media_dir=Path(os.environ.get("MEDIA_DIR", "media")).resolve(),
         web_dist=Path(web_dist).resolve() if web_dist else None,
         consent_version=os.environ.get("CONSENT_VERSION", "draft-0"),

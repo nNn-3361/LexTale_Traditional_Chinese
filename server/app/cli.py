@@ -53,12 +53,13 @@ def read_item_list(csv_path: Path, image_dir: Path) -> list[dict]:
             raise CliError(f"{csv_path}: missing columns: {', '.join(sorted(missing))}")
         rows = list(reader)
 
+    image_root = image_dir.resolve()
     errors, items, seen = [], [], set()
     for n, row in enumerate(rows, start=2):  # line 1 is the header
         code = (row["item_id"] or "").strip()
         lex = (row["lexicality"] or "").strip()
         char = (row["char"] or "").strip() or None
-        image = image_dir / (row["image"] or "").strip()
+        image = (image_dir / (row["image"] or "").strip()).resolve()
         where = f"line {n} ({code or 'no item_id'})"
         if not code:
             errors.append(f"{where}: empty item_id")
@@ -71,7 +72,9 @@ def read_item_list(csv_path: Path, image_dir: Path) -> list[dict]:
             errors.append(f"{where}: real item without char")
         if lex == "pseudo" and char:
             errors.append(f"{where}: pseudo item should have an empty char")
-        if not image.is_file():
+        if not image.is_relative_to(image_root):
+            errors.append(f"{where}: image must be inside {image_root}")
+        elif not image.is_file():
             errors.append(f"{where}: image not found: {image}")
         elif image.suffix.lower() not in IMAGE_TYPES:
             errors.append(f"{where}: unsupported image type {image.suffix}")

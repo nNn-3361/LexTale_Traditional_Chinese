@@ -102,3 +102,9 @@ def test_research_mode_hides_score(client, db, demo_bank, media_dir):
 def test_order_is_randomized_per_run(client, demo_session):
     orders = {tuple(t["image_url"] for t in _start(client, demo_session)["trials"][2:]) for _ in range(8)}
     assert len(orders) > 1
+
+
+def test_media_does_not_serve_outside_files(client, demo_session):
+    assert client.get("/media/../app/main.py").status_code == 404
+    assert client.get("/media/%2e%2e/%2e%2e/etc/passwd").status_code == 404
+    assert client.get("/media/").status_code == 404  # no directory listing

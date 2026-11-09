@@ -118,6 +118,18 @@ Tests use in-memory SQLite by default. Before merging changes to the models,
 also run them against MySQL by setting `TEST_DATABASE_URL` to an empty test
 database (all its tables are dropped).
 
+## Security notes
+
+Checked on 2026-11-09 (see the pull request for details). Before collecting real data:
+
+- Put the app behind a reverse proxy with HTTPS (for example Caddy or nginx). Do not expose port 8000 directly to the internet. Add rate limiting there for `/api/sessions` and `/api/runs`, since these need no login.
+- Set strong values in `.env`. Never commit `.env`.
+- Close sessions (`close-session`) when a class or study round is done; anyone with an open code can start runs.
+- `participant_identities` is only separated by table. Limit who has database access, back up the database, and keep backups as protected as the database. Encryption at rest is [TBD].
+- `test_runs.user_agent` (browser and device type) is kept for checking technical problems. Leave it out of analysis exports.
+- The server does not write access logs, so participants' IP addresses are not stored. If the reverse proxy logs IP addresses, say so in the consent text or turn that logging off.
+- The interactive API documentation at `/docs` is public. It shows no data.
+
 ## Not done yet
 
 [TBD] Teacher dashboard, data export for analysis, final consent text,

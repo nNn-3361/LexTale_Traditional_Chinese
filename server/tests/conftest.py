@@ -20,6 +20,9 @@ from sqlalchemy.pool import StaticPool
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+# The app requires DATABASE_URL; tests pass their own engine to app.db instead.
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL", "sqlite://")
+
 
 @pytest.fixture()
 def media_dir(tmp_path, monkeypatch):
