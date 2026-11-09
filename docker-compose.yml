@@ -1,0 +1,36 @@
+# Local and server setup: MySQL plus the app (API and test page).
+# Copy .env.example to .env and set real passwords before using this anywhere
+# other than your own computer.
+services:
+  db:
+    image: mysql:8.4
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci"]
+    environment:
+      MYSQL_DATABASE: lextale
+      MYSQL_USER: lextale
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  app:
+    build: .
+    environment:
+      DATABASE_URL: mysql+pymysql://lextale:${MYSQL_PASSWORD}@db:3306/lextale?charset=utf8mb4
+      CONSENT_VERSION: ${CONSENT_VERSION:-draft-0}
+    volumes:
+      - media:/data/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  mysql-data:
+  media:
