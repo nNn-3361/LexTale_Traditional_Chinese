@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>繁體假字組字器</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: workbench — editor (sources → composed glyph on a 米字格) beside the item list; stacks on phones */
+:root{
+  --paper:#eef1ee; --sheet:#fbfcfb; --ink:#1b2321; --muted:#5d6966; --line:#cfd6d2;
+  --zhu:#b8432f; --zhu-soft:#f3dcd5; --ok:#2f7a4f; --ok-soft:#d9eee1; --warn:#9a6a10; --warn-soft:#f5ead1;
+  --f-ui:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --f-display:"Noto Serif TC","PMingLiU",serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#131917; --sheet:#1b2220; --ink:#e4ebe8; --muted:#94a19d; --line:#2f3936;
+  --zhu:#e2765f; --zhu-soft:#3a221c; --ok:#6cc391; --ok-soft:#1d3327; --warn:#e0b45a; --warn-soft:#352b17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#131917; --sheet:#1b2220; --ink:#e4ebe8; --muted:#94a19d; --line:#2f3936;
+  --zhu:#e2765f; --zhu-soft:#3a221c; --ok:#6cc391; --ok-soft:#1d3327; --warn:#e0b45a; --warn-soft:#352b17; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-ui);font-size:15px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;margin-bottom:16px}
+h1{font-family:var(--f-display);font-weight:700;font-size:1.7rem;margin:0;text-wrap:balance}
+h1 small{font-family:var(--f-ui);font-weight:400;font-size:.9rem;color:var(--muted);margin-left:.6em}
+h2{font-size:.78rem;letter-spacing:.12em;color:var(--muted);font-weight:500;margin:0 0 10px}
+.settings{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-size:.88rem;color:var(--muted)}
+.grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:860px){.grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.panel+.panel{margin-top:20px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--muted)}
+input[type=text],select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 8px}
+textarea{font-size:.95rem;width:100%;resize:vertical}
+input.char{font-family:var(--f-display);font-size:1.6rem;width:3.2em;text-align:center;padding:2px}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--zhu);outline-offset:2px}
+button{font:inherit;font-size:.9rem;cursor:pointer;border-radius:6px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);padding:7px 12px}
+button:hover{border-color:var(--muted)}
+button.primary{background:var(--zhu);border-color:var(--zhu);color:#fff;font-weight:500}
+button:disabled{opacity:.45;cursor:not-allowed}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:6px 12px}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--sheet)}
+.editor{display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:start}
+@media (max-width:520px){.editor{grid-template-columns:minmax(0,1fr)}}
+.sources{display:flex;flex-direction:column;gap:14px}
+.src{display:flex;gap:10px;align-items:center}
+.src canvas{width:96px;height:96px;background:var(--paper);border:1px solid var(--line);border-radius:6px}
+.src .ctl{display:flex;flex-direction:column;gap:6px}
+input[type=range]{width:110px;accent-color:var(--zhu)}
+.out{display:flex;flex-direction:column;align-items:center;gap:10px}
+.out canvas{width:100%;max-width:260px;aspect-ratio:1;background:var(--paper);border:1px solid var(--line);border-radius:8px}
+.ids{font-family:var(--f-mono);font-size:.95rem}
+.chip{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:3px 10px;font-size:.84rem}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.bad{background:var(--zhu-soft);color:var(--zhu)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.note{font-size:.82rem;color:var(--muted)}
+.note a{color:var(--zhu)}
+.cands{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:8px;margin-top:12px}
+.cands button{padding:4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.72rem;color:var(--muted)}
+.cands canvas{width:52px;height:52px}
+details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
+.list-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center;margin-bottom:12px}
+.ratio{font-size:.86rem;font-variant-numeric:tabular-nums}
+.ratio b{font-weight:500}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+.item{position:relative;border:1px solid var(--line);border-radius:8px;padding:8px 6px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.74rem;background:var(--paper)}
+.item canvas{width:64px;height:64px}
+.item .id{font-family:var(--f-mono);font-weight:500;color:var(--ink)}
+.item .meta{color:var(--muted);text-align:center}
+.item .kind{position:absolute;top:5px;left:6px;font-size:.68rem;padding:0 5px;border-radius:4px}
+.kind.real{background:var(--ok-soft);color:var(--ok)}
+.kind.pseudo{background:var(--zhu-soft);color:var(--zhu)}
+.item .del{position:absolute;top:2px;right:2px;border:0;background:none;padding:2px 6px;color:var(--muted)}
+.item.flag{border-color:var(--zhu)}
+.empty{border:1px dashed var(--line);border-radius:8px;padding:22px;text-align:center;color:var(--muted);font-size:.9rem}
+.status{min-height:1.4em;font-size:.86rem;color:var(--muted)}
+@media (prefers-reduced-motion:no-preference){button{transition:border-color .15s}}
+</style>
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>繁體假字組字器<small>取兩個真字各一半，拼成假字</small></h1>
+    <div class="settings">
+      <label style="flex-direction:row;align-items:center;gap:6px">字型
+        <select id="font"><option value="sans">思源黑體 TC</option><option value="serif">思源宋體 TC</option></select></label>
+      <label style="flex-direction:row;align-items:center;gap:6px">圖片尺寸
+        <select id="size"><option>256</option><option selected>400</option><option>600</option></select></label>
+      <label style="flex-direction:row;align-items:center;gap:6px">背景
+        <select id="bg"><option value="white">白底</option><option value="clear">透明</option></select></label>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div>
+      <section class="panel" aria-labelledby="h-make">
+        <h2 id="h-make">製作假字</h2>
+        <div class="row" style="margin-bottom:14px">
+          <div class="seg" role="group" aria-label="結構">
+            <button id="st-lr" aria-pressed="true">⿰ 左右</button>
+            <button id="st-tb" aria-pressed="false">⿱ 上下</button>
+          </div>
+          <span class="note" id="st-hint">取 A 的左半 ＋ B 的右半</span>
+        </div>
+        <div class="editor">
+          <div class="sources">
+            <div class="src">
+              <canvas id="cvA" width="192" height="192" aria-label="來源字 A"></canvas>
+              <div class="ctl">
+                <label>A 字<input id="inA" class="char" type="text" value="語" autocomplete="off"></label>
+                <label><span id="cutA-l">切線 50%</span><input id="cutA" type="range" min="15" max="85" value="50"></label>
+              </div>
+            </div>
+            <div class="src">
+              <canvas id="cvB" width="192" height="192" aria-label="來源字 B"></canvas>
+              <div class="ctl">
+                <label>B 字<input id="inB" class="char" type="text" value="湖" autocomplete="off"></label>
+                <label><span id="cutB-l">切線 50%</span><input id="cutB" type="range" min="15" max="85" value="50"></label>
+              </div>
+            </div>
+            <button id="auto">自動找切線</button>
+          </div>
+          <div class="out">
+            <canvas id="cvOut" width="520" height="520" aria-label="組合結果"></canvas>
+            <button class="primary" id="addPseudo">加入清單（假字）</button>
+          </div>
+        </div>
+        <p class="note" style="margin:14px 0 0">加入前請自行確認不是真字，可查<a href="https://dict.variants.moe.edu.tw/" target="_blank" rel="noopener">教育部異體字字典</a>並由母語者審核。</p>
+      </section>
+
+      <section class="panel" aria-labelledby="h-real">
+        <h2 id="h-real">加入真字</h2>
+        <div class="row">
+          <input id="inReal" type="text" placeholder="可一次貼上多個字，例如：們說書" style="flex:1;min-width:180px">
+          <button id="addReal">加入清單（真字）</button>
+        </div>
+        <p class="note" style="margin:8px 0 0">真字以同一字型、同一尺寸輸出，與假字風格一致，避免受試者從字型看出答案。</p>
+      </section>
+    </div>
+
+    <section class="panel" aria-labelledby="h-list">
+      <div class="list-head">
+        <h2 id="h-list" style="margin:0">題目清單</h2>
+        <div class="ratio" id="ratio"></div>
+      </div>
+      <div id="items"></div>
+      <div class="row" style="margin-top:14px">
+        <button class="primary" id="zip">下載全部（PNG ＋ CSV）</button>
+        <button id="csv">只下載 CSV</button>
+        <button id="clear">清空清單</button>
+      </div>
+      <div class="status" id="status" role="status" style="margin-top:8px"></div>
+      <p class="note">清單只存在這個瀏覽器。CSV 欄位：題號、真／假、字、來源 A、來源 B、結構、切線、字型、圖檔名。</p>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
+(() => {
+const $ = id => document.getElementById(id);
+const BIN = '⿰⿱⿴⿵⿶⿷⿸⿹⿺⿻', TER = '⿲⿳';
+const FONTS = { sans: '"Noto Sans TC"', serif: '"Noto Serif TC"' };
+const S = 400;
+const state = { struct: 'lr', font: 'sans', items: [], seq: { P: 0, R: 0 } };
+let downloads = null;
+
+// ---------- persistence (per-viewer convenience) ----------
+const KEY = 'pseudo-char-maker-v1';
+function save() { try { localStorage.setItem(KEY, JSON.stringify({ items: state.items, seq: state.seq, font: state.font })); } catch (e) {} }
+function load() {
+  try { const d = JSON.parse(localStorage.getItem(KEY) || 'null'); if (d) { state.items = d.items || []; state.seq = d.seq || state.seq; state.font = d.font || 'sans'; } } catch (e) {}
+}
+
+// ---------- glyph rendering ----------
+const gcache = new Map();
+function fam() { return FONTS[state.font]; }
+function glyph(ch) {
+  const key = state.font + ch; if (gcache.has(key)) return gcache.get(key);
+  const c = document.createElement('canvas'); c.width = c.height = S;
+  const x = c.getContext('2d', { willReadFrequently: true });
+  x.font = `400 ${Math.round(S * 0.86)}px ${fam()}, serif`;
+  x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.fillStyle = '#000';
+  const m = x.measureText('永');
+  x.fillText(ch, S / 2, S / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
+  gcache.set(key, c); return c;
+}
+function inkProfile(c, vertical) {
+  const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, S, S).data, p = new Float64Array(S);
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) p[vertical ? y : x] += d[(y * S + x) * 4 + 3];
+  return p;
+}
+function autoCut(ch, side) {
+  const p = inkProfile(glyph(ch), state.struct === 'tb');
+  let lo = Math.round(S * .28), hi = Math.round(S * .72), min = Infinity;
+  for (let i = lo; i <= hi; i++) min = Math.min(min, p[i]);
+  const tol = min + 255 * 2, cand = [];
+  for (let i = lo; i <= hi; i++) if (p[i] <= tol) cand.push(i);
+  return Math.round(cand[Math.floor(cand.length / 2)] / S * 100);
+}
+// composite at S×S (black ink on transparent)
+function compose(it) {
+  const c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
+  if (it.kind === 'real') { x.drawImage(glyph(it.ch), 0, 0); return c; }
+  const ga = glyph(it.a), gb = glyph(it.b), ca = it.cutA / 100 * S, cb = it.cutB / 100 * S, j = (ca + cb) / 2;
+  if (it.struct === 'lr') { x.drawImage(ga, 0, 0, ca, S, 0, 0, j, S); x.drawImage(gb, cb, 0, S - cb, S, j, 0, S - j, S); }
+  else { x.drawImage(ga, 0, 0, S, ca, 0, 0, S, j); x.drawImage(gb, 0, cb, S, S - cb, 0, j, S, S - j); }
+  return c;
+}
+function tint(src, color) {
+  const c = document.createElement('canvas'); c.width = src.width; c.height = src.height; const x = c.getContext('2d');
+  x.drawImage(src, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = color; x.fillRect(0, 0, c.width, c.height); return c;
+}
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+function paint(cv, src, opt = {}) {
+  const x = cv.getContext('2d'), W = cv.width; x.clearRect(0, 0, W, W);
+  if (opt.grid) { // 米字格
+    x.save(); x.strokeStyle = css('--zhu'); x.globalAlpha = .35; x.lineWidth = Math.max(1, W / 260); x.setLineDash([W / 60, W / 70]);
+    x.beginPath(); x.moveTo(W / 2, 0); x.lineTo(W / 2, W); x.moveTo(0, W / 2); x.lineTo(W, W / 2); x.moveTo(0, 0); x.lineTo(W, W); x.moveTo(W, 0); x.lineTo(0, W); x.stroke(); x.restore();
+  }
+  x.drawImage(tint(src, css('--ink')), 0, 0, W, W);
+  if (opt.cut != null) {
+    x.save(); x.strokeStyle = css('--zhu'); x.lineWidth = 2; const p = opt.cut / 100 * W; x.beginPath();
+    if (state.struct === 'lr') { x.moveTo(p, 0); x.lineTo(p, W); } else { x.moveTo(0, p); x.lineTo(W, p); } x.stroke();
+    x.globalAlpha = .12; x.fillStyle = css('--zhu');
+    if (state.struct === 'lr') opt.keep === 0 ? x.fillRect(p, 0, W - p, W) : x.fillRect(0, 0, p, W);
+    else opt.keep === 0 ? x.fillRect(0, p, W, W - p) : x.fillRect(0, 0, W, p);
+    x.restore();
+  }
+}
+function exportCanvas(it) {
+  const N = +$('size').value, c = document.createElement('canvas'); c.width = c.height = N; const x = c.getContext('2d');
+  if ($('bg').value === 'white') { x.fillStyle = '#fff'; x.fillRect(0, 0, N, N); }
+  x.drawImage(compose(it), 0, 0, N, N); return c;
+}
+
+// ---------- editor ----------
+const firstChar = v => Array.from(v.trim())[0] || '';
+function cur() { return { kind: 'pseudo', a: firstChar($('inA').value), b: firstChar($('inB').value), struct: state.struct, cutA: +$('cutA').value, cutB: +$('cutB').value }; }
+function refresh() {
+  const it = cur();
+  $('cutA-l').textContent = `切線 ${it.cutA}%`; $('cutB-l').textContent = `切線 ${it.cutB}%`;
+  $('st-hint').textContent = state.struct === 'lr' ? '取 A 的左半 ＋ B 的右半' : '取 A 的上半 ＋ B 的下半';
+  if (!it.a || !it.b) { $('addPseudo').disabled = true; return; }
+  paint($('cvA'), glyph(it.a), { cut: it.cutA, keep: 0 });
+  paint($('cvB'), glyph(it.b), { cut: it.cutB, keep: 1 });
+  paint($('cvOut'), compose(it), { grid: true });
+  $('addPseudo').disabled = false;
+}
+function setStruct(s) {
+  state.struct = s; $('st-lr').setAttribute('aria-pressed', s === 'lr'); $('st-tb').setAttribute('aria-pressed', s === 'tb'); doAuto();
+}
+function doAuto() { const a = firstChar($('inA').value), b = firstChar($('inB').value); if (a) $('cutA').value = autoCut(a); if (b) $('cutB').value = autoCut(b); refresh(); }
+
+// ---------- list ----------
+function renderList() {
+  const box = $('items'); box.innerHTML = '';
+  const nR = state.items.filter(i => i.kind === 'real').length, nP = state.items.length - nR;
+  $('ratio').innerHTML = state.items.length ? `真字 <b>${nR}</b> ・ 假字 <b>${nP}</b> ・ 假字比例 <b>${Math.round(nP / state.items.length * 100)}%</b>` : '';
+  if (!state.items.length) { box.innerHTML = '<div class="empty">清單是空的。<br>在左邊拼好假字後按「加入清單」，或貼上真字。</div>'; }
+  else {
+    const g = document.createElement('div'); g.className = 'items';
+    for (const it of state.items) {
+      const d = document.createElement('div'); d.className = 'item';
+      const k = document.createElement('span'); k.className = 'kind ' + it.kind; k.textContent = it.kind === 'real' ? '真' : '假';
+      const del = document.createElement('button'); del.className = 'del'; del.textContent = '×'; del.setAttribute('aria-label', '刪除 ' + it.id);
+      del.onclick = () => { state.items = state.items.filter(x => x !== it); save(); renderList(); };
+      const cv = document.createElement('canvas'); cv.width = cv.height = 128; paint(cv, compose(it));
+      const id = document.createElement('div'); id.className = 'id'; id.textContent = it.id;
+      const meta = document.createElement('div'); meta.className = 'meta';
+      meta.textContent = it.kind === 'real' ? it.ch : `${it.a}＋${it.b}`;
+      if (it.kind === 'pseudo') { cv.style.cursor = 'pointer'; cv.title = '載入編輯區'; cv.onclick = () => loadIntoEditor(it); }
+      d.append(k, del, cv, id, meta); g.append(d);
+    }
+    box.append(g);
+  }
+  $('zip').disabled = $('csv').disabled = !state.items.length || !downloads;
+}
+function loadIntoEditor(it) {
+  $('inA').value = it.a; $('inB').value = it.b; state.struct = it.struct;
+  $('st-lr').setAttribute('aria-pressed', it.struct === 'lr'); $('st-tb').setAttribute('aria-pressed', it.struct === 'tb');
+  $('cutA').value = it.cutA; $('cutB').value = it.cutB; refresh();
+}
+const pad = n => String(n).padStart(3, '0');
+function addPseudo() {
+  const it = cur(); it.id = 'P' + pad(++state.seq.P);
+  state.items.push(it); save(); renderList(); status(`已加入 ${it.id}`);
+}
+function addReal() {
+  const chars = Array.from($('inReal').value).filter(c => /\p{Script=Han}/u.test(c));
+  if (!chars.length) { status('請輸入至少一個漢字'); return; }
+  ensureFont(chars.join('')).then(() => {
+    for (const ch of chars) state.items.push({ kind: 'real', ch, id: 'R' + pad(++state.seq.R) });
+    $('inReal').value = ''; save(); renderList(); status(`已加入 ${chars.length} 個真字`);
+  });
+}
+function status(t) { $('status').textContent = t; }
+
+// ---------- export ----------
+function csvText() {
+  const rows = [['item_id', 'lexicality', 'char', 'source_a', 'source_b', 'structure', 'cut_a', 'cut_b', 'font', 'image']];
+  const fontName = state.font === 'sans' ? 'Noto Sans TC' : 'Noto Serif TC';
+  for (const it of state.items) rows.push(it.kind === 'real'
+    ? [it.id, 'real', it.ch, '', '', '', '', '', fontName, it.id + '.png']
+    : [it.id, 'pseudo', '', it.a, it.b, it.struct === 'lr' ? '⿰' : '⿱', it.cutA, it.cutB, fontName, it.id + '.png']);
+  return '﻿' + rows.map(r => r.map(v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v).join(',')).join('\n');
+}
+async function offer(filename, data) {
+  try { await downloads.save({ filename, data }); status(`已下載 ${filename}`); }
+  catch (e) { status(e && e.code === 'declined' ? '已取消下載' : '無法下載：' + (e && e.message || '未知錯誤')); }
+}
+async function doZip() {
+  status('打包中…'); await ensureFont(state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''));
+  const z = new JSZip();
+  for (const it of state.items) { const b = await new Promise(r => exportCanvas(it).toBlob(r, 'image/png')); z.file(it.id + '.png', b); }
+  z.file('items.csv', csvText());
+  const blob = await z.generateAsync({ type: 'blob' });
+  offer('pseudo-characters.zip', blob);
+}
+
+// ---------- fonts ----------
+async function ensureFont(text) {
+  try { await document.fonts.load(`400 64px ${fam()}`, text); } catch (e) {}
+}
+async function rerenderAll() {
+  gcache.clear(); await ensureFont($('inA').value + $('inB').value + state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''));
+  refresh(); renderList();
+}
+
+// ---------- wire up ----------
+load(); $('font').value = state.font;
+$('st-lr').onclick = () => setStruct('lr'); $('st-tb').onclick = () => setStruct('tb');
+['inA', 'inB'].forEach(id => $(id).addEventListener('input', async () => { await ensureFont($('inA').value + $('inB').value); doAuto(); }));
+['cutA', 'cutB'].forEach(id => $(id).addEventListener('input', refresh));
+$('auto').onclick = doAuto;
+$('addPseudo').onclick = addPseudo;
+$('addReal').onclick = addReal;
+$('inReal').addEventListener('keydown', e => { if (e.key === 'Enter') addReal(); });
+$('font').onchange = () => { state.font = $('font').value; save(); rerenderAll(); };
+$('clear').onclick = () => {
+  if ($('clear').dataset.armed) { state.items = []; state.seq = { P: 0, R: 0 }; save(); renderList(); status('清單已清空'); delete $('clear').dataset.armed; $('clear').textContent = '清空清單'; }
+  else { $('clear').dataset.armed = 1; $('clear').textContent = '再按一次確認清空'; setTimeout(() => { delete $('clear').dataset.armed; $('clear').textContent = '清空清單'; }, 3000); }
+};
+$('csv').onclick = () => offer('items.csv', csvText());
+$('zip').onclick = doZip;
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { refresh(); renderList(); });
+new MutationObserver(() => { refresh(); renderList(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+renderList(); refresh(); rerenderAll().then(doAuto);
+if (window.claude && window.claude.use) window.claude.use('downloads').then(d => { downloads = d; renderList(); if (!d) status('這個檢視無法下載檔案，請在 claude.ai 開啟。'); });
+else { // opened as a local file: use an ordinary browser download
+  downloads = { save: async ({ filename, data }) => {
+    const blob = data instanceof Blob ? data : new Blob([data], { type: filename.endsWith('.csv') ? 'text/csv' : 'application/octet-stream' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; document.body.append(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  } };
+  renderList();
+}
+})();
+</script>
+
+</body>
+</html>
