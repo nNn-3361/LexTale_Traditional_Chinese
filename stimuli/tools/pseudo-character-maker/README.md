@@ -12,9 +12,11 @@ A pseudo-character is built by joining half of one real character with half of a
 
 1. Choose a structure: left-right (⿰) or top-bottom (⿱).
 2. Enter two real characters, A and B.
-3. The tool renders both in the same font and cuts each one. For left-right, it keeps the left part of A and the right part of B; for top-bottom, the top of A and the bottom of B.
+3. The tool renders both in the same font and splits each one at a cut position. For left-right, it keeps the left part of A and the right part of B; for top-bottom, the top of A and the bottom of B.
 4. By default the cut is placed automatically at the column (or row) with the least ink between 28% and 72% of the glyph width. A slider adjusts each cut by hand.
-5. The two kept parts are scaled to meet at the midpoint of the two cut positions and drawn into one glyph.
+5. Stroke cutting (on by default): the glyph is split into connected groups of ink. A group with at least 80% of its pixels on the kept side is kept whole; one with at most 20% is dropped whole. Only a group that lies clearly on both sides, where the two parts' strokes touch, is cut along the straight line, and the tool shows a warning. This removes the small fragments and half-cut strokes that a straight cut leaves behind. Turning it off gives a plain straight cut.
+6. The two kept parts are scaled to meet at the midpoint of the two cut positions and drawn into one glyph.
+7. Eraser (optional): any remaining residue can be erased by hand on the preview. Each eraser stroke is saved with the item (brush radius and points, in 400 x 400 glyph coordinates), so the image is regenerated exactly on every export and the edit is recorded in the CSV.
 
 Example: 語 + 湖 keeps 訁 from 語 and 胡 from 湖, giving a left-right character ⿰言胡.
 
@@ -40,6 +42,9 @@ The item list can be downloaded as a ZIP containing one PNG per item and an `ite
 | `source_a`, `source_b` | The two source characters |
 | `structure` | `⿰` or `⿱` |
 | `cut_a`, `cut_b` | Cut positions, as a percentage of the glyph size |
+| `cut_mode` | `stroke` (stroke cutting) or `line` (straight cut) |
+| `manual_edit` | `yes` if the eraser was used |
+| `erase_strokes` | Eraser strokes as JSON: `[{"r": radius, "p": [[x, y], ...]}]` |
 | `font` | Font used for rendering |
 | `image` | PNG file name |
 
@@ -54,5 +59,6 @@ The item list is stored in the browser's local storage only.
 ## Limitations
 
 - Only left-right and top-bottom structures are supported; enclosing structures (such as 國 or 問) are not.
-- Characters with interlocking strokes may not have a clean cut line and can need manual adjustment or a different source character.
+- When the two parts of a source character touch, stroke cutting falls back to a straight cut for that group of strokes. Use a different source character or the eraser.
+- Eraser strokes are tied to the font and cut positions. Changing the font or the cuts of an erased item can make the erased areas miss.
 - Fonts are loaded from Google Fonts, so rendering depends on that service. For final stimuli, the font files should be pinned locally and their license confirmed for release under CC BY.
