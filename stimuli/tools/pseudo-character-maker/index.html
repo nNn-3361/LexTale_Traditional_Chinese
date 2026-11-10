@@ -79,6 +79,11 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .item .del{position:absolute;top:2px;right:2px;border:0;background:none;padding:2px 6px;color:var(--muted)}
 .item.flag{border-color:var(--zhu)}
 .empty{border:1px dashed var(--line);border-radius:8px;padding:22px;text-align:center;color:var(--muted);font-size:.9rem}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.tools input[type=range]{width:90px}
+.tools button[aria-pressed=true]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+#cvOut.erasing{cursor:crosshair;touch-action:none}
+.check{display:flex;flex-direction:row;align-items:center;gap:6px;font-size:.86rem;color:var(--ink)}
 .status{min-height:1.4em;font-size:.86rem;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){button{transition:border-color .15s}}
 </style>
@@ -126,9 +131,17 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
               </div>
             </div>
             <button id="auto">自動找切線</button>
+            <label class="check"><input id="cutStroke" type="checkbox" checked> 按筆畫切（整筆保留或丟掉）</label>
           </div>
           <div class="out">
             <canvas id="cvOut" width="520" height="520" aria-label="組合結果"></canvas>
+            <div id="cutWarn"></div>
+            <div class="tools" role="group" aria-label="橡皮擦">
+              <button id="eraser" aria-pressed="false">橡皮擦</button>
+              <label class="check" style="color:var(--muted)">粗細<input id="brush" type="range" min="4" max="40" value="12"></label>
+              <button id="undoErase">復原</button>
+              <button id="clearErase">清除擦除</button>
+            </div>
             <button class="primary" id="addPseudo">加入清單（假字）</button>
           </div>
         </div>
@@ -157,7 +170,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
         <button id="clear">清空清單</button>
       </div>
       <div class="status" id="status" role="status" style="margin-top:8px"></div>
-      <p class="note">清單只存在這個瀏覽器。CSV 欄位：題號、真／假、字、來源 A、來源 B、結構、切線、字型、圖檔名。</p>
+      <p class="note">清單只存在這個瀏覽器。CSV 欄位：題號、真／假、字、來源 A、來源 B、結構、切線、切法、是否手動擦除、擦除紀錄、字型、圖檔名。</p>
     </section>
   </div>
 </div>
@@ -169,7 +182,7 @@ const $ = id => document.getElementById(id);
 const BIN = '⿰⿱⿴⿵⿶⿷⿸⿹⿺⿻', TER = '⿲⿳';
 const FONTS = { sans: '"Noto Sans TC"', serif: '"Noto Serif TC"' };
 const S = 400;
-const state = { struct: 'lr', font: 'sans', items: [], seq: { P: 0, R: 0 } };
+const state = { struct: 'lr', font: 'sans', items: [], seq: { P: 0, R: 0 }, erase: [], erasing: false };
 let downloads = null;
 
 // ---------- persistence (per-viewer convenience) ----------
@@ -205,13 +218,67 @@ function autoCut(ch, side) {
   for (let i = lo; i <= hi; i++) if (p[i] <= tol) cand.push(i);
   return Math.round(cand[Math.floor(cand.length / 2)] / S * 100);
 }
+// Keep the A (first) or B (second) side of a glyph.
+// mode 'stroke': every connected group of ink is kept or dropped whole, by which side most of it lies on;
+// only a group that lies clearly on both sides (two parts whose strokes touch) is cut along the line.
+// mode 'line': plain straight cut (items made before stroke cutting existed).
+const kcache = new Map();
+function kept(ch, cutPct, first, struct, mode) {
+  const key = [state.font, ch, cutPct, first, struct, mode].join('|'); if (kcache.has(key)) return kcache.get(key);
+  const src = glyph(ch), cut = cutPct / 100 * S, vert = struct === 'tb';
+  const img = src.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, S, S), d = img.data;
+  const pos = i => vert ? (i / S | 0) : i % S;
+  const onKeep = i => first ? pos(i) < cut : pos(i) >= cut;
+  let mixed = 0;
+  if (mode === 'line') { for (let i = 0; i < S * S; i++) if (!onKeep(i)) d[i * 4 + 3] = 0; }
+  else {
+    const lab = new Int32Array(S * S), stack = [], decide = [0];
+    let n = 0;
+    for (let i0 = 0; i0 < S * S; i0++) {
+      if (lab[i0] || d[i0 * 4 + 3] <= 8) continue;
+      n++; lab[i0] = n; stack.push(i0); let tot = 0, keepPx = 0;
+      while (stack.length) {
+        const i = stack.pop(); tot++; if (onKeep(i)) keepPx++;
+        const x = i % S, y = i / S | 0;
+        for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+          const nx = x + dx, ny = y + dy; if (nx < 0 || ny < 0 || nx >= S || ny >= S) continue;
+          const j = ny * S + nx; if (!lab[j] && d[j * 4 + 3] > 8) { lab[j] = n; stack.push(j); }
+        }
+      }
+      const f = keepPx / tot;
+      decide[n] = f >= 0.8 ? 1 : f <= 0.2 ? 0 : 2; // 1 keep, 0 drop, 2 cut along the line
+      if (decide[n] === 2) mixed += Math.min(keepPx, tot - keepPx);
+    }
+    for (let i = 0; i < S * S; i++) {
+      const L = lab[i], k = L ? decide[L] : 2;
+      if (k === 0 || (k === 2 && !onKeep(i))) d[i * 4 + 3] = 0;
+    }
+  }
+  const c = document.createElement('canvas'); c.width = c.height = S; c.getContext('2d').putImageData(img, 0, 0);
+  const r = { c, mixed }; kcache.set(key, r); return r;
+}
+function applyErase(x, strokes) {
+  if (!strokes || !strokes.length) return;
+  x.save(); x.globalCompositeOperation = 'destination-out'; x.lineCap = x.lineJoin = 'round'; x.strokeStyle = x.fillStyle = '#000';
+  for (const st of strokes) {
+    x.lineWidth = st.r * 2; x.beginPath();
+    st.p.forEach(([px, py], i) => i ? x.lineTo(px, py) : x.moveTo(px, py));
+    if (st.p.length === 1) { x.arc(st.p[0][0], st.p[0][1], st.r, 0, Math.PI * 2); x.fill(); } else x.stroke();
+  }
+  x.restore();
+}
 // composite at S×S (black ink on transparent)
 function compose(it) {
   const c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d');
   if (it.kind === 'real') { x.drawImage(glyph(it.ch), 0, 0); return c; }
-  const ga = glyph(it.a), gb = glyph(it.b), ca = it.cutA / 100 * S, cb = it.cutB / 100 * S, j = (ca + cb) / 2;
-  if (it.struct === 'lr') { x.drawImage(ga, 0, 0, ca, S, 0, 0, j, S); x.drawImage(gb, cb, 0, S - cb, S, j, 0, S - j, S); }
-  else { x.drawImage(ga, 0, 0, S, ca, 0, 0, S, j); x.drawImage(gb, 0, cb, S, S - cb, 0, j, S, S - j); }
+  const mode = it.cutMode || 'line';
+  const ka = kept(it.a, it.cutA, true, it.struct, mode), kb = kept(it.b, it.cutB, false, it.struct, mode);
+  const ca = it.cutA / 100 * S, cb = it.cutB / 100 * S, j = (ca + cb) / 2;
+  const sa = j / ca, sb = (S - j) / (S - cb), ob = j - cb * sb;
+  if (it.struct === 'lr') { x.drawImage(ka.c, 0, 0, S * sa, S); x.drawImage(kb.c, ob, 0, S * sb, S); }
+  else { x.drawImage(ka.c, 0, 0, S, S * sa); x.drawImage(kb.c, 0, ob, S, S * sb); }
+  applyErase(x, it.erase);
+  c.mixed = [ka.mixed, kb.mixed];
   return c;
 }
 function tint(src, color) {
@@ -243,7 +310,7 @@ function exportCanvas(it) {
 
 // ---------- editor ----------
 const firstChar = v => Array.from(v.trim())[0] || '';
-function cur() { return { kind: 'pseudo', a: firstChar($('inA').value), b: firstChar($('inB').value), struct: state.struct, cutA: +$('cutA').value, cutB: +$('cutB').value }; }
+function cur() { return { kind: 'pseudo', a: firstChar($('inA').value), b: firstChar($('inB').value), struct: state.struct, cutA: +$('cutA').value, cutB: +$('cutB').value, cutMode: $('cutStroke').checked ? 'stroke' : 'line', erase: state.erase.map(e => ({ r: e.r, p: e.p.slice() })) }; }
 function refresh() {
   const it = cur();
   $('cutA-l').textContent = `切線 ${it.cutA}%`; $('cutB-l').textContent = `切線 ${it.cutB}%`;
@@ -251,11 +318,16 @@ function refresh() {
   if (!it.a || !it.b) { $('addPseudo').disabled = true; return; }
   paint($('cvA'), glyph(it.a), { cut: it.cutA, keep: 0 });
   paint($('cvB'), glyph(it.b), { cut: it.cutB, keep: 1 });
-  paint($('cvOut'), compose(it), { grid: true });
+  const out = compose(it); paint($('cvOut'), out, { grid: true });
+  const [ma, mb] = out.mixed, w = $('cutWarn');
+  const bad = [ma > 40 ? `A「${it.a}」` : '', mb > 40 ? `B「${it.b}」` : ''].filter(Boolean);
+  w.innerHTML = '';
+  if (bad.length) { const s = document.createElement('span'); s.className = 'chip warn'; s.textContent = `切線穿過${bad.join('、')}相連的筆畫，該處仍是直線切，可換來源字或用橡皮擦`; w.append(s); }
+  $('undoErase').disabled = $('clearErase').disabled = !state.erase.length;
   $('addPseudo').disabled = false;
 }
 function setStruct(s) {
-  state.struct = s; $('st-lr').setAttribute('aria-pressed', s === 'lr'); $('st-tb').setAttribute('aria-pressed', s === 'tb'); doAuto();
+  state.struct = s; state.erase = []; $('st-lr').setAttribute('aria-pressed', s === 'lr'); $('st-tb').setAttribute('aria-pressed', s === 'tb'); doAuto();
 }
 function doAuto() { const a = firstChar($('inA').value), b = firstChar($('inB').value); if (a) $('cutA').value = autoCut(a); if (b) $('cutB').value = autoCut(b); refresh(); }
 
@@ -275,7 +347,7 @@ function renderList() {
       const cv = document.createElement('canvas'); cv.width = cv.height = 128; paint(cv, compose(it));
       const id = document.createElement('div'); id.className = 'id'; id.textContent = it.id;
       const meta = document.createElement('div'); meta.className = 'meta';
-      meta.textContent = it.kind === 'real' ? it.ch : `${it.a}＋${it.b}`;
+      meta.textContent = it.kind === 'real' ? it.ch : `${it.a}＋${it.b}` + (it.erase && it.erase.length ? ' ・ 手動' : '');
       if (it.kind === 'pseudo') { cv.style.cursor = 'pointer'; cv.title = '載入編輯區'; cv.onclick = () => loadIntoEditor(it); }
       d.append(k, del, cv, id, meta); g.append(d);
     }
@@ -286,7 +358,8 @@ function renderList() {
 function loadIntoEditor(it) {
   $('inA').value = it.a; $('inB').value = it.b; state.struct = it.struct;
   $('st-lr').setAttribute('aria-pressed', it.struct === 'lr'); $('st-tb').setAttribute('aria-pressed', it.struct === 'tb');
-  $('cutA').value = it.cutA; $('cutB').value = it.cutB; refresh();
+  $('cutA').value = it.cutA; $('cutB').value = it.cutB;
+  $('cutStroke').checked = (it.cutMode || 'line') === 'stroke'; state.erase = (it.erase || []).map(e => ({ r: e.r, p: e.p.slice() })); refresh();
 }
 const pad = n => String(n).padStart(3, '0');
 function addPseudo() {
@@ -305,11 +378,11 @@ function status(t) { $('status').textContent = t; }
 
 // ---------- export ----------
 function csvText() {
-  const rows = [['item_id', 'lexicality', 'char', 'source_a', 'source_b', 'structure', 'cut_a', 'cut_b', 'font', 'image']];
+  const rows = [['item_id', 'lexicality', 'char', 'source_a', 'source_b', 'structure', 'cut_a', 'cut_b', 'cut_mode', 'manual_edit', 'erase_strokes', 'font', 'image']];
   const fontName = state.font === 'sans' ? 'Noto Sans TC' : 'Noto Serif TC';
   for (const it of state.items) rows.push(it.kind === 'real'
-    ? [it.id, 'real', it.ch, '', '', '', '', '', fontName, it.id + '.png']
-    : [it.id, 'pseudo', '', it.a, it.b, it.struct === 'lr' ? '⿰' : '⿱', it.cutA, it.cutB, fontName, it.id + '.png']);
+    ? [it.id, 'real', it.ch, '', '', '', '', '', '', 'no', '', fontName, it.id + '.png']
+    : [it.id, 'pseudo', '', it.a, it.b, it.struct === 'lr' ? '⿰' : '⿱', it.cutA, it.cutB, it.cutMode || 'line', it.erase && it.erase.length ? 'yes' : 'no', it.erase && it.erase.length ? JSON.stringify(it.erase) : '', fontName, it.id + '.png']);
   return '﻿' + rows.map(r => r.map(v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v).join(',')).join('\n');
 }
 async function offer(filename, data) {
@@ -330,16 +403,27 @@ async function ensureFont(text) {
   try { await document.fonts.load(`400 64px ${fam()}`, text); } catch (e) {}
 }
 async function rerenderAll() {
-  gcache.clear(); await ensureFont($('inA').value + $('inB').value + state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''));
+  gcache.clear(); kcache.clear(); await ensureFont($('inA').value + $('inB').value + state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''));
   refresh(); renderList();
 }
 
 // ---------- wire up ----------
 load(); $('font').value = state.font;
 $('st-lr').onclick = () => setStruct('lr'); $('st-tb').onclick = () => setStruct('tb');
-['inA', 'inB'].forEach(id => $(id).addEventListener('input', async () => { await ensureFont($('inA').value + $('inB').value); doAuto(); }));
+['inA', 'inB'].forEach(id => $(id).addEventListener('input', async () => { state.erase = []; await ensureFont($('inA').value + $('inB').value); doAuto(); }));
 ['cutA', 'cutB'].forEach(id => $(id).addEventListener('input', refresh));
 $('auto').onclick = doAuto;
+$('cutStroke').onchange = refresh;
+// eraser: strokes are stored in composite (S×S) coordinates so the image can be regenerated exactly
+const cvOut = $('cvOut'); let drawing = null;
+const toS = e => { const r = cvOut.getBoundingClientRect(); return [Math.round((e.clientX - r.left) / r.width * S * 10) / 10, Math.round((e.clientY - r.top) / r.height * S * 10) / 10]; };
+$('eraser').onclick = () => { state.erasing = !state.erasing; $('eraser').setAttribute('aria-pressed', state.erasing); cvOut.classList.toggle('erasing', state.erasing); };
+cvOut.addEventListener('pointerdown', e => { if (!state.erasing) return; e.preventDefault(); cvOut.setPointerCapture(e.pointerId); drawing = { r: +$('brush').value / 2, p: [toS(e)] }; state.erase.push(drawing); refresh(); });
+cvOut.addEventListener('pointermove', e => { if (!drawing) return; drawing.p.push(toS(e)); refresh(); });
+const endDraw = () => { drawing = null; };
+cvOut.addEventListener('pointerup', endDraw); cvOut.addEventListener('pointercancel', endDraw);
+$('undoErase').onclick = () => { state.erase.pop(); refresh(); };
+$('clearErase').onclick = () => { state.erase = []; refresh(); };
 $('addPseudo').onclick = addPseudo;
 $('addReal').onclick = addReal;
 $('inReal').addEventListener('keydown', e => { if (e.key === 'Enter') addReal(); });
