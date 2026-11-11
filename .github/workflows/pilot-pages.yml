@@ -1,0 +1,56 @@
+# Builds the participant pilot page (web/pilot.html) and publishes it on
+# GitHub Pages. Results go to the team's Google Sheet through the Apps Script
+# web app whose URL is in the repository variable PILOT_RESULTS_URL.
+# Setup and the one-time repository settings: docs/pilot-hosting.md.
+name: Pilot page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - "stimuli/sets/pilot-draft-v1/**"
+      - ".github/workflows/pilot-pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # Nothing is published until the results URL has been set up.
+    if: vars.PILOT_RESULTS_URL != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npm run pilot:build
+        working-directory: web
+        env:
+          VITE_RESULTS_URL: ${{ vars.PILOT_RESULTS_URL }}
+          VITE_PILOT_SET: ${{ vars.PILOT_SET }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist-pilot
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
