@@ -1,6 +1,6 @@
 # Pilot draft set v1 (90 items)
 
-A first draft of the test items: 60 real characters and 30 pseudo-characters, rendered as 400 x 400 px PNG images with a transparent background in Source Han Serif TC (思源宋體 TC). It is meant for review by the team and for pilot testing. It is not the final test.
+A first draft of the test items: 60 real characters and 30 pseudo-characters, rendered as 400 x 400 px PNG images (grayscale + alpha, transparent background) in Source Han Serif TC (思源宋體 TC). The 90 images take about 0.7 MB. It is meant for review by the team and for pilot testing. It is not the final test.
 
 Every item has `review_status = pending`. No item has been checked by a person yet (see [Review checklist](#review-checklist)).
 
@@ -16,6 +16,7 @@ Every item has `review_status = pending`. No item has been checked by a person y
 | `pseudo_recipes.csv` | How each pseudo-character is built: source characters, kept halves, cuts set by hand, and how often each component takes that position in real characters. |
 | `select_real.py` | Selects the real characters (fixed random seed, see the procedure in the file). |
 | `render.mjs` | Runs the pseudo-character maker in headless Chromium to make all images and `items.csv`. |
+| `optimize_images.py` | Shrinks the PNGs without changing any pixel (grayscale + alpha, maximum compression), and checks this. |
 | `contact_sheet.py` | Draws `preview.png`. |
 
 Extra columns in `items.csv`:
@@ -88,7 +89,10 @@ Before the pilot, a team member should:
    - JSZip: `dist/jszip.min.js` from the npm package `jszip@3.10.1`.
 2. `python3 select_real.py --moe-dir <csv folder> --unihan <unihan.db> --ids <ids.txt>`
 3. `node render.mjs --font <SourceHanSerifTC-Regular.otf> --jszip <jszip.min.js>` (needs Playwright with Chromium)
-4. `python3 contact_sheet.py <SourceHanSerifTC-Regular.otf>` (needs Pillow)
+4. `python3 optimize_images.py` (needs Pillow)
+5. `python3 contact_sheet.py <SourceHanSerifTC-Regular.otf>` (needs Pillow)
+
+The source of truth is `select_real.py`, `pseudo_recipes.csv` and the tool. Do not edit images by hand; change the inputs and regenerate. Images are kept as PNG, not SVG, because the tool cuts rendered glyphs as bitmaps and a PNG looks the same in every browser. When the item bank is final, tag the version and attach a ZIP of the set to a GitHub Release so it can be cited [TBD].
 
 ## Sources and licenses
 

@@ -23,4 +23,4 @@ for i, r in enumerate(rows):
     text = r["char"] if r["lexicality"] == "real" else r["source_a"] + "+" + r["source_b"]
     tag = {"real": r["freq_band"], "pseudo_legal_position": "legal", "noncharacter_illegal_position": "illegal"}[r["item_type"]]
     draw.text((x + 4, y + cell - 2), f"{r['item_id']} {text} {tag}", fill="black", font=font)
-im.save(os.path.join(here, "preview.png"))
+im.convert("L").save(os.path.join(here, "preview.png"), optimize=True)
