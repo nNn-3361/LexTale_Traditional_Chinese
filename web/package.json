@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "beta:prepare": "node scripts/prepare-beta-bank.mjs",
+    "beta:dev": "npm run beta:prepare && vite --config vite.beta.config.ts",
+    "beta:build": "tsc --noEmit && npm run beta:prepare && vite build --config vite.beta.config.ts"
   },
   "dependencies": {
     "@jspsych/plugin-html-button-response": "2.1.0",
