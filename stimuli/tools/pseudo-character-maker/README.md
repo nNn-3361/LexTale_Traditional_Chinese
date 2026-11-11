@@ -12,7 +12,7 @@ A pseudo-character is built by joining half of one real character with half of a
 
 1. Choose a structure: left-right (⿰) or top-bottom (⿱).
 2. Enter two real characters, A and B.
-3. The tool renders both in the same font and splits each one at a cut position. For left-right, it keeps the left part of A and the right part of B; for top-bottom, the top of A and the bottom of B.
+3. The tool renders both in the same font and splits each one at a cut position. For left-right, it keeps the left part of A and the right part of B; for top-bottom, the top of A and the bottom of B. The "保留" (keep) menu under each source can keep the other half instead, which moves a component to a position it does not normally take (for example 氵 on the right). This is used to make position-illegal non-characters. When a half is moved like this, the two parts are placed by their ink, between the source characters' outer margins, instead of at the cut positions.
 4. By default the cut is placed automatically at the column (or row) with the least ink between 28% and 72% of the glyph width. A slider adjusts each cut by hand.
 5. Stroke cutting (on by default): the glyph is split into connected groups of ink. A group with at least 80% of its pixels on the kept side is kept whole; one with at most 20% is dropped whole. Only a group that lies clearly on both sides, where the two parts' strokes touch, is cut along the straight line, and the tool shows a warning. This removes the small fragments and half-cut strokes that a straight cut leaves behind. Turning it off gives a plain straight cut.
 6. The two kept parts are scaled to meet at the midpoint of the two cut positions and drawn into one glyph.
@@ -42,6 +42,7 @@ The item list can be downloaded as a ZIP containing one PNG per item and an `ite
 | `source_a`, `source_b` | The two source characters |
 | `structure` | `⿰` or `⿱` |
 | `cut_a`, `cut_b` | Cut positions, as a percentage of the glyph size |
+| `keep_a`, `keep_b` | Which half of each source is kept: `left`/`right` or `top`/`bottom`. Default: `left`/`top` for A, `right`/`bottom` for B |
 | `cut_mode` | `stroke` (stroke cutting) or `line` (straight cut) |
 | `manual_edit` | `yes` if the eraser was used |
 | `erase_strokes` | Eraser strokes as JSON: `[{"r": radius, "p": [[x, y], ...]}]` |
