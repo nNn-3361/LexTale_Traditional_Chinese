@@ -51,7 +51,7 @@ This project is carried out by a research team at **National Taipei University o
 | `docs/PROJECT_LOG.md` | One-line log of every change |
 | `stimuli/tools/pseudo-character-maker/` | Browser tool used to build pseudo-characters and render item images |
 | `server/` | Backend API, MySQL schema and migrations, item bank import tools (see `server/README.md`) |
-| `web/` | Test page for participants, built with jsPsych (see `web/README.md`) |
+| `web/` | Test page for participants, built with jsPsych, and a beta page that runs without the server (see `web/README.md`) |
 | `docker-compose.yml` | Starts MySQL and the app together |
 
 ## References
