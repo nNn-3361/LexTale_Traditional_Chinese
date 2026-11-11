@@ -88,7 +88,7 @@ scores on the server, and the final scoring method is [TBD] after the pilot):
 | Score | Formula |
 | --- | --- |
 | Averaged score | (percent correct on real items + percent correct on pseudo items) / 2. LexTALE's score (Lemhoefer & Broersma, 2012, https://doi.org/10.3758/s13428-011-0146-0); same as the server's `lextale_avg`. Not affected by the real:pseudo ratio. |
-| Ghent-style score | real correct - (real items / pseudo items) x pseudo items answered "yes". For tests with twice as many real as pseudo items this is "real correct - 2 x false alarms" [Unverified, confidence 70%; check Brysbaert (2013) and Chan & Chang (2018) for the exact definitions]. The pilot set is 1:1, so the factor is 1. |
+| Ghent-style score | real correct - (real items / pseudo items) x pseudo items answered "yes". For tests with twice as many real as pseudo items this is "real correct - 2 x false alarms", the Corrected Accuracy of LEXTALE_CH (Chan & Chang, 2018, equation 2; checked 2026-11-11). The Ghent score definition in Brysbaert (2013) has not been checked [Unverified]. The pilot set is 1:1, so the factor is 1. |
 | d' | z(hit rate) - z(false alarm rate), with the log-linear correction (add 0.5 to counts and 1 to totals) so rates of 0 or 1 still give a finite value. |
 
 ## Pilot page (no server)
