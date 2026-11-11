@@ -346,7 +346,8 @@ async function renderAnalysis() {
       (!filters.flagged || band(s) === "bad" || band(s) === "warn"),
   );
   const cmp: Record<string, (a: ItemStat, b: ItemStat) => number> = {
-    pct: (a, b) => (a.pct ?? 101) - (b.pct ?? 101),
+    // Items with fewer than 3 answers go last.
+    pct: (a, b) => (a.n >= 3 ? a.pct! : 101 + (a.pct ?? 1)) - (b.n >= 3 ? b.pct! : 101 + (b.pct ?? 1)),
     id: (a, b) => a.item.id.localeCompare(b.item.id),
     rpb: (a, b) => (a.rpb ?? 2) - (b.rpb ?? 2),
     rt: (a, b) => (b.meanRt ?? -1) - (a.meanRt ?? -1),
