@@ -32,6 +32,9 @@ export interface RunRecord {
   practice: string[];
   /** Test trials in the order shown. */
   trials: TrialRecord[];
+  /** Pilot page only: code given by the researcher (never a name), and the consent text version agreed to. */
+  participant?: string;
+  consentVersion?: string;
 }
 
 const LOCAL_KEY = "lextale-beta-runs-v1";

@@ -172,3 +172,12 @@ td.low { color: var(--bad); font-weight: 600; }
 .feedback.bad { color: var(--bad); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* Pilot page (participants): one narrow column, consent text and messages. */
+.pilot { max-width: 640px; margin: 0 auto; }
+.pilot .box { text-align: left; }
+.pilot .box p + p, .pilot > p + p { margin-top: 8px; }
+.pilot h2 { margin-bottom: 8px; }
+.pilot .en { color: var(--muted); font-size: 0.95em; margin-top: 2px; }
+.draft { color: var(--bad); font-size: 0.88em; }
+.row.center { justify-content: center; }

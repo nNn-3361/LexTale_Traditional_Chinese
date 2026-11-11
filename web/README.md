@@ -90,3 +90,21 @@ scores on the server, and the final scoring method is [TBD] after the pilot):
 | Averaged score | (percent correct on real items + percent correct on pseudo items) / 2. LexTALE's score (Lemhoefer & Broersma, 2012, https://doi.org/10.3758/s13428-011-0146-0); same as the server's `lextale_avg`. Not affected by the real:pseudo ratio. |
 | Ghent-style score | real correct - (real items / pseudo items) x pseudo items answered "yes". For tests with twice as many real as pseudo items this is "real correct - 2 x false alarms" [Unverified, confidence 70%; check Brysbaert (2013) and Chan & Chang (2018) for the exact definitions]. The pilot set is 1:1, so the factor is 1. |
 | d' | z(hit rate) - z(false alarm rate), with the log-linear correction (add 0.5 to counts and 1 to totals) so rates of 0 or 1 still give a finite value. |
+
+## Pilot page (no server)
+
+`pilot.html` is the participant version of the beta page, for running the
+pilot without a server of our own. It adds a consent page and an optional
+participant code, does not show participants which items they got wrong, and
+sends each finished run to the team's Google Sheet through
+`apps-script/Code.gs`. It is published on GitHub Pages by
+`.github/workflows/pilot-pages.yml`. Setup, data and limits:
+[`docs/pilot-hosting.md`](../docs/pilot-hosting.md).
+
+```sh
+VITE_RESULTS_URL=https://script.google.com/macros/s/.../exec npm run pilot:build   # writes dist-pilot/
+npm run pilot:dev    # http://localhost:5173/pilot.html (answers go nowhere unless VITE_RESULTS_URL is set)
+```
+
+The beta and pilot pages share the test itself (`src/beta/run-test.ts`). The
+raw CSV now has a `participant_code` column; files without it still import.

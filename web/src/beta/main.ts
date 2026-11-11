@@ -11,17 +11,9 @@
  * Items come from items.json, built from an item set by
  * scripts/prepare-beta-bank.mjs. Nothing is sent to the project's server.
  */
-import { initJsPsych } from "jspsych";
-import "jspsych/css/jspsych.css";
-import HtmlButtonResponsePlugin from "@jspsych/plugin-html-button-response";
-import HtmlKeyboardResponsePlugin from "@jspsych/plugin-html-keyboard-response";
-import InstructionsPlugin from "@jspsych/plugin-instructions";
-import PreloadPlugin from "@jspsych/plugin-preload";
-
-import LexicalDecisionPlugin from "../lexical-decision";
-import { text } from "../text";
 import { itemCsv, itemStats, isCorrect, parseRawCsv, rawCsv, runScore, type ItemStat } from "./analysis";
-import { loadBank, planRun, SET_LABELS, type Bank, type Item, type Plan, type SetChoice } from "./bank";
+import { loadBank, planRun, SET_LABELS, type Bank, type Item, type SetChoice } from "./bank";
+import { runTest } from "./run-test";
 import type { RunScore } from "./scoring";
 import * as store from "./store";
 import "./beta.css";
@@ -144,7 +136,7 @@ async function startRun(choice: SetChoice, label: string, withPractice: boolean)
   app.hidden = true;
   stage.hidden = false;
   stage.innerHTML = "";
-  const trials = await runTest(plan);
+  const trials = await runTest(stage, plan);
   const run: store.RunRecord = {
     id: store.newRunId(),
     createdAt: new Date().toISOString(),
@@ -157,76 +149,6 @@ async function startRun(choice: SetChoice, label: string, withPractice: boolean)
   showPage(`${header("儲存中…")}`);
   const saved = await store.saveRun(run);
   renderResult(run, saved);
-}
-
-function runTest(plan: Plan): Promise<store.TrialRecord[]> {
-  const out: store.TrialRecord[] = [];
-  const total = plan.test.length;
-  const jsPsych = initJsPsych({
-    display_element: stage,
-    show_progress_bar: true,
-    auto_update_progress_bar: false,
-    message_progress_bar: "進度 Progress",
-  });
-  const fixation = {
-    type: HtmlKeyboardResponsePlugin,
-    stimulus: '<div class="fixation">+</div>',
-    choices: "NO_KEYS",
-    trial_duration: 500,
-  };
-  const decision = (item: Item, practice: boolean) => ({
-    type: LexicalDecisionPlugin,
-    stimulus: item.image,
-    yes_label: text.yes,
-    no_label: text.no,
-    data: { item: item.id },
-    on_finish: (d: { response: "yes" | "no"; rt: number; source: "key" | "button" }) => {
-      if (practice) return;
-      out.push({ i: item.id, r: d.response, rt: d.rt, s: d.source });
-      jsPsych.progressBar!.progress = out.length / total;
-    },
-  });
-
-  const timeline: unknown[] = [
-    {
-      type: PreloadPlugin,
-      images: [...plan.practice, ...plan.test].map((i) => i.image),
-      message: text.preloading,
-      error_message: text.preloadError,
-      show_detailed_errors: false,
-      continue_after_error: false,
-    },
-    {
-      type: InstructionsPlugin,
-      pages: text.instructions,
-      show_clickable_nav: true,
-      button_label_next: text.next,
-      button_label_previous: "←",
-    },
-  ];
-  if (plan.practice.length) {
-    timeline.push({ type: HtmlButtonResponsePlugin, stimulus: text.practiceStart, choices: [text.go] });
-    for (const item of plan.practice) {
-      timeline.push(fixation, decision(item, true), {
-        type: HtmlKeyboardResponsePlugin,
-        stimulus: () => {
-          const last = jsPsych.data.get().last(1).values()[0];
-          const ok = isCorrect(item, last.response);
-          return `<div class="feedback ${ok ? "ok" : "bad"}">${ok ? text.correct : text.wrong}</div>`;
-        },
-        choices: "NO_KEYS",
-        trial_duration: 800,
-      });
-    }
-  }
-  timeline.push({
-    type: HtmlButtonResponsePlugin,
-    stimulus: plan.practice.length ? text.testStart : text.testStartNoPractice,
-    choices: [text.go],
-  });
-  for (const item of plan.test) timeline.push(fixation, decision(item, false));
-
-  return jsPsych.run(timeline as never).then(() => out);
 }
 
 // ---------------------------------------------------------------- one run's result

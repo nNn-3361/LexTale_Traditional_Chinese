@@ -79,7 +79,10 @@ const RAW_COLUMNS = [
   "correct",
   "rt_ms",
   "source",
+  "participant_code",
 ] as const;
+/** Columns that older files may lack. */
+const OPTIONAL_COLUMNS = new Set<string>(["participant_code"]);
 
 function cell(v: unknown): string {
   const s = v === null || v === undefined ? "" : String(v);
@@ -109,6 +112,7 @@ export function rawCsv(runs: RunRecord[], items: Map<string, Item>): string {
           item ? (isCorrect(item, t.r) ? 1 : 0) : "",
           t.rt,
           t.s,
+          run.participant ?? "",
         ]
           .map(cell)
           .join(","),
@@ -189,7 +193,7 @@ export function parseRawCsv(text: string): RunRecord[] {
   const [head, ...rows] = parseCsv(text);
   const col = (name: string) => {
     const k = head?.indexOf(name) ?? -1;
-    if (k < 0) throw new Error(`Column ${name} not found`);
+    if (k < 0 && !OPTIONAL_COLUMNS.has(name)) throw new Error(`Column ${name} not found`);
     return k;
   };
   const c = Object.fromEntries(RAW_COLUMNS.map((n) => [n, col(n)])) as Record<(typeof RAW_COLUMNS)[number], number>;
@@ -210,6 +214,7 @@ export function parseRawCsv(text: string): RunRecord[] {
         practice: [],
         trials: [],
         pos: [],
+        ...(c.participant_code >= 0 && r[c.participant_code] ? { participant: r[c.participant_code] } : {}),
       };
       runs.set(id, run);
     }
