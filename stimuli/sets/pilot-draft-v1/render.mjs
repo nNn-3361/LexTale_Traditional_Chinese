@@ -110,6 +110,7 @@ const out = toolRows.map(r => {
   return {
     ...r,
     font: FONT_LABEL,
+    batch: src.batch,
     item_type: isReal ? 'real' : src.pseudo_type === 'legal' ? 'pseudo_legal_position' : 'noncharacter_illegal_position',
     freq_band: isReal ? src.band : '',
     per_million: isReal ? src.per_million : '',

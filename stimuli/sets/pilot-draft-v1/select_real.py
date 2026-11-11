@@ -6,7 +6,7 @@ Inputs (not stored in this repository; see README.md for where to get them):
   --unihan    unihan.db (SQLite) from the npm package cjk-unihan 0.0.3
   --ids       ids.txt from cjkvi-ids
 
-Output: real_selection.csv (written next to this script).
+Output: real_selection.csv (written next to this script), batch 1 first, then batch 2.
 
 Procedure
 1. Pool the character counts of the four yearly corpora; per million = count / total * 1e6.
@@ -31,13 +31,22 @@ import sqlite3
 SEED = 20261111
 # band label, lower bound (inclusive), upper bound (exclusive), per million
 BANDS = [(">100", 100, 1e12), ("20-100", 20, 100), ("10-20", 10, 20), ("5-10", 5, 10), ("1-5", 1, 5), ("<1", 0, 1)]
-# (left-right, top-bottom) count per band. Band totals follow LEXTALE_CH (Chan & Chang, 2018).
-QUOTA = {">100": (2, 1), "20-100": (5, 2), "10-20": (8, 4), "5-10": (5, 3), "1-5": (9, 4), "<1": (11, 6)}
+# (left-right, top-bottom) count per band.
+# Batch 1 (the first 60): band totals of LEXTALE_CH's final test (Chan & Chang, 2018).
+# All 90 (batch 1 + 2): the same proportions times 1.5, for a 180-item pilot (90 real + 90 pseudo).
+BATCH1 = {">100": (2, 1), "20-100": (5, 2), "10-20": (8, 4), "5-10": (5, 3), "1-5": (9, 4), "<1": (11, 6)}
+QUOTA = {">100": (3, 2), "20-100": (7, 3), "10-20": (12, 6), "5-10": (8, 4), "1-5": (13, 6), "<1": (17, 9)}
 # Characters skipped by hand during selection, with the reason.
 EXCLUDE = {
     "邢": "used almost only as a surname or place name",
     "琇": "used almost only in given names",
     "滇": "used almost only as a place name (Yunnan)",
+    "漳": "used almost only as a river name",
+    "陝": "used almost only as a place name (Shaanxi)",
+    "沂": "used almost only as a river or place name",
+    "嬴": "used almost only as a surname",
+    "釷": "only a chemical element name (thorium)",
+    "旳": "in this corpus almost certainly a typo for 的",
     "赤": "not visually split into two components",
     "奏": "not visually split into two components",
 }
@@ -129,10 +138,13 @@ def main():
                 if row["char"] in EXCLUDE:
                     skipped.append(row["char"])
                     continue
+                row = {"batch": 1 if taken < BATCH1[band][k] else 2, **row}
                 out.append(row)
                 taken += 1
             assert taken == QUOTA[band][k], (band, struct)
     assert sorted(skipped) == sorted(EXCLUDE), (skipped, list(EXCLUDE))
+    # batch 1 keeps its order (and so its item ids R001-R060); batch 2 follows
+    out.sort(key=lambda r: r["batch"])
 
     path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "real_selection.csv")
     with open(path, "w", encoding="utf-8", newline="") as fh:
