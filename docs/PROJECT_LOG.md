@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-12: Pseudo-character maker: each source now has a crop box (cut on all four sides) and each part can be moved and scaled on the result; old items render unchanged, and the CSV adds crop and move columns. (#10)
 - 2026-11-11: Rewrote the README for the team and supervisor: decisions so far, current status, the three versions of the test (beta, no-maintenance pilot, full system), item bank, scoring, open issues, and checked references. (#9)
 - 2026-11-11: Decided to run the pilot without a server for now: added a participant pilot page published on GitHub Pages that sends results to a team Google Sheet (Apps Script); the FastAPI + MySQL system is kept but not used until hosting is discussed with the supervisor. (#8)
 - 2026-11-11: Added a beta test page (`web/beta.html`) that runs the full test flow in the browser without the server, with scores, per-item results, item analysis over saved runs, and CSV export, for trying the pilot draft set before review is finished. (#7)
