@@ -2,7 +2,7 @@
 //
 // The script opens stimuli/tools/pseudo-character-maker/index.html in headless Chromium and
 // uses the tool's own controls: for each pseudo-character it sets the structure, the two source
-// characters and the kept halves, lets the tool find the cuts (or applies the cut and cut mode
+// characters and the kept halves (preset crop boxes), lets the tool find the cuts (or applies the cut and cut mode
 // given in pseudo_recipes.csv), and adds it to the list; then it adds the real characters and downloads
 // the ZIP (PNG + items.csv) with the Serif font, 400 px and a transparent background.
 // The final items.csv adds the frequency band and item type columns from real_selection.csv
@@ -72,17 +72,19 @@ await page.selectOption('#bg', 'clear');
 await page.evaluate(() => document.fonts.ready);
 
 const SIDE = { left: 'first', top: 'first', right: 'second', bottom: 'second' };
+const EDGE = { left: 'r', top: 'b', right: 'l', bottom: 't' }; // crop box edge that is the cut
 for (const p of pseudo) {
   await page.click(p.structure === '⿰' ? '#st-lr' : '#st-tb');
   await page.fill('#inA', p.source_a);
   await page.fill('#inB', p.source_b);
   await page.evaluate(t => document.fonts.load('400 64px "Noto Serif TC"', t), p.source_a + p.source_b);
-  await page.click('#auto'); // automatic cut after the font has loaded
-  await page.selectOption('#sideA', SIDE[p.keep_a]);
-  await page.selectOption('#sideB', SIDE[p.keep_b]);
+  // the preset buttons pick the kept half and find the cut automatically (after the font has loaded)
+  await page.click(`#preA button[data-pre="${SIDE[p.keep_a]}"]`);
+  await page.click(`#preB button[data-pre="${SIDE[p.keep_b]}"]`);
   await page.setChecked('#cutStroke', (p.cut_mode || 'stroke') === 'stroke');
-  for (const [k, id] of [['cut_a', '#cutA'], ['cut_b', '#cutB']]) {
-    if (p[k]) await page.$eval(id, (el, v) => { el.value = v; el.dispatchEvent(new Event('input')); }, p[k]);
+  // a cut given in the recipe overrides the automatic one: it is the inner edge of the crop box
+  for (const [k, cut, keep] of [['A', p.cut_a, p.keep_a], ['B', p.cut_b, p.keep_b]]) {
+    if (cut) await page.$eval(`#crop${k}-${EDGE[keep]}`, (el, v) => { el.value = v; el.dispatchEvent(new Event('change')); }, cut);
   }
   p.warning = await page.$eval('#cutWarn', el => el.textContent.trim());
   await page.click('#addPseudo');
