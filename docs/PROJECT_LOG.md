@@ -2,7 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
-- 2026-11-17: Added the team's own pilot item set (90 real characters, 65 pseudo-characters) to `stimuli/sets/pilot-v2/`, merged from the team's batch exports; the beta and pilot pages no longer offer the old "batch 1" choice. Not yet reviewed. (#PR)
+- 2026-11-17: Added the team's own pilot item set (90 real characters, 65 pseudo-characters) to `stimuli/sets/pilot-v2/`, merged from the team's batch exports; the beta and pilot pages no longer offer the old "batch 1" choice. Not yet reviewed. (#16)
 - 2026-11-17: Pseudo-character maker: one source character can be left empty, to place and scale one part at a time. (#15)
 - 2026-11-17: Pseudo-character maker: both parts now start centred at their original size (overlap allowed) instead of the automatic layout, and changing a source character no longer removes any eraser strokes. (#14)
 - 2026-11-17: Pseudo-character maker: manual layout, so each part keeps its own place and size (width and height set separately, 10% to 300%) and changing one part's crop or scale no longer resizes the other; eraser strokes now belong to a part and stay when it is moved, scaled or re-cropped, until undone. Older items render unchanged; the CSV adds layout, place and per-part erase columns. (#13)
