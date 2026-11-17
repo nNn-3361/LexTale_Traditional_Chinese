@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 65 | P001-P065 |
+| Pseudo-characters | 35 | P003-P057, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -17,6 +17,7 @@ All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker
     (the team exported several batches, and each batch restarts its IDs at 001).
   - `review_status`: `pending` for every item.
 - `images/`: one PNG per item, named by `item_id`.
+- `excluded.csv`: pseudo-characters left out because they already exist in Unicode (see below).
 - `merge_team_csvs.py`: the script that merged the team's batch exports into `items.csv`
   and copied the images. Usage: `python3 merge_team_csvs.py <team folder> <this folder>`,
   where the team folder has `real words/` and `fake words/` with the exported CSVs and the
@@ -40,15 +41,30 @@ kept their own IDs. The script's mapping was worked out from the file modificati
 
 The full mapping is in the `source_file` and `source_item_id` columns.
 
+## Pseudo-characters that already exist in Unicode (removed)
+
+On 2026-11-18 the team decided to leave out every pseudo-character whose shape is already an
+encoded Unicode character, however rare. 30 of the 65 were removed, leaving 35. The script
+does this (the `EXCLUDED` list); the team's original images are not changed. Removed IDs are
+not reused, so the remaining pseudo-characters keep their IDs and the numbering has gaps.
+
+How they were found: each image's two components were read by eye, and the structure (for
+example ⿰月辛) was looked up in cjkvi-ids (https://github.com/cjkvi/cjkvi-ids), allowing
+common component variants (for example 王/𤣩, 糹/糸). `excluded.csv` lists each removed item
+with the existing character and its code point. Limits [Unverified, confidence 80%]:
+
+- A misread component gives a wrong result either way.
+- cjkvi-ids only covers encoded characters. A shape can also be a variant listed in the MOE
+  Dictionary of Chinese Character Variants (https://dict.variants.moe.edu.tw/) without being
+  encoded, so the remaining 35 still need the manual check below.
+
 ## Review before the pilot [TBD]
 
 Every item must be checked by a person (see the maker's README). Items to look at first,
 found while merging (component readings are from the images and may be wrong):
 
-- P045 (月+巴 as rendered) looks like the real character 肥.
-- Some pseudo-characters are encoded in Unicode (found in cjkvi-ids,
-  https://github.com/cjkvi/cjkvi-ids), for example P002 洔, P007 佊, P008 𦛛, P025 𡧟,
-  P015 𢩵, P026 㛡, P033 𨈕, P034 芇, P043 萑, P063 𤡕, P065 𪢪. Check each against the MOE
-  Dictionary of Chinese Character Variants (https://dict.variants.moe.edu.tw/).
-- P009 looks close to 焦, P054 to 聊, P064 to 朝.
-- The set has 90 real and 65 pseudo items, not 1:1 [TBD: the team decides the ratio].
+- P021 (魄+棵, 白+果) is drawn so that its left part looks like 目, which would make it the
+  encoded character 𥇬. Kept because 白+果 is not encoded; the team should decide.
+- P009 (住 over 灬) looks close to 焦.
+- The set has 90 real and 35 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+  uses 60 real and 30 pseudo in its final test].
