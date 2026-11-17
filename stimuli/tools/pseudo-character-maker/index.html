@@ -519,9 +519,11 @@ function refresh() {
   $('sx-l').textContent = `寬 ${pc(m.sx)}%`; $('sy-l').textContent = `高 ${pc(m.sy)}%`;
   $('selA').setAttribute('aria-pressed', state.sel === 'A'); $('selB').setAttribute('aria-pressed', state.sel === 'B');
   $('moveInfo').textContent = KS.map(k => { const v = state.ed[k].pos; return `${k}：寬 ${pc(v.sx)}%、高 ${pc(v.sy)}%（相對原字）`; }).join('　') + '。調整一個部件不會改變另一個。';
-  if (!it.a || !it.b) { $('addPseudo').disabled = true; return; }
-  paint($('cvA'), glyph(it.a), { crop: it.cropA });
-  paint($('cvB'), glyph(it.b), { crop: it.cropB });
+  // One source may be left empty, to adjust one part at a time; an item needs both to be added to the list.
+  const one = !it.a || !it.b;
+  if (!it.a && !it.b) { $('addPseudo').disabled = true; for (const k of ['cvA', 'cvB', 'cvOut']) paint($(k), layer(), { grid: k === 'cvOut' }); $('cutWarn').innerHTML = ''; return; }
+  paint($('cvA'), it.a ? glyph(it.a) : layer(), { crop: it.a ? it.cropA : null });
+  paint($('cvB'), it.b ? glyph(it.b) : layer(), { crop: it.b ? it.cropB : null });
   const out = compose(it);
   let hl = null;
   if (state.mode === 'move') hl = out.parts[state.sel === 'A' ? 0 : 1];
@@ -534,10 +536,11 @@ function refresh() {
   if (edge.length) warns.push(`部件 ${edge.join('、')} 碰到或超出圖框邊緣，超出的部分會被切掉`);
   // the automatic layout itself squeezes a part a little along the axis, so only a clear difference is flagged
   if (KS.some(k => { const v = state.ed[k].pos; return Math.max(v.sx, v.sy) / Math.min(v.sx, v.sy) > 1.2; })) warns.push('寬高比例差很多，筆畫粗細可能和真字不一致');
+  $('undoErase').disabled = $('clearErase').disabled = !state.erase.length;
+  if (one) warns.push(`${it.a ? 'B' : 'A'} 字是空的：可以先調好部件 ${it.a ? 'A' : 'B'}，兩個字都填了才能加入清單`);
   w.innerHTML = '';
   for (const t of warns) { const s = document.createElement('span'); s.className = 'chip warn'; s.textContent = t; w.append(s); }
-  $('undoErase').disabled = $('clearErase').disabled = !state.erase.length;
-  $('addPseudo').disabled = false;
+  $('addPseudo').disabled = one;
 }
 function setCrop(k, c, pre) {
   state.ed[k].crop = c; state.ed[k].pre = pre;
@@ -611,7 +614,7 @@ function loadIntoEditor(it) {
 const pad = n => String(n).padStart(3, '0');
 const hasErase = it => !!((it.erase && it.erase.length) || (it.eraseA && it.eraseA.length) || (it.eraseB && it.eraseB.length));
 function addPseudo() {
-  const it = cur(); it.id = 'P' + pad(++state.seq.P);
+  const it = cur(); if (!it.a || !it.b) return; it.id = 'P' + pad(++state.seq.P);
   state.items.push(it); save(); renderList(); status(`已加入 ${it.id}`);
 }
 function addReal() {
@@ -738,7 +741,7 @@ $('mMove').onclick = () => setMode('move');
 $('eraser').onclick = () => setMode(state.mode === 'erase' ? 'move' : 'erase');
 $('selA').onclick = () => select('A'); $('selB').onclick = () => select('B');
 cvOut.addEventListener('pointerdown', e => {
-  if (!ch('A') || !ch('B')) return;
+  if (!ch('A') && !ch('B')) return;
   e.preventDefault(); cvOut.focus({ preventScroll: true }); cvOut.setPointerCapture(e.pointerId);
   if (state.mode === 'erase') {
     // a stroke is given to both parts while it is drawn, then kept only for the parts whose ink it covers
