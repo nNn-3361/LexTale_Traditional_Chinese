@@ -9,7 +9,7 @@ on:
     branches: [main]
     paths:
       - "web/**"
-      - "stimuli/sets/pilot-draft-v1/**"
+      - "stimuli/sets/pilot-v2/**"
       - ".github/workflows/pilot-pages.yml"
   workflow_dispatch:
 

@@ -52,7 +52,7 @@ npm run beta:dev     # http://localhost:5173/beta.html
 npm run beta:build   # writes dist-beta/, a static site (open it from any web server)
 ```
 
-`beta:prepare` (run by both commands) reads `stimuli/sets/pilot-draft-v1/items.csv`
+`beta:prepare` (run by both commands) reads `stimuli/sets/pilot-v2/items.csv`
 and its images and writes them to `web/.beta-bank/` (generated, not committed).
 To use another set: `node scripts/prepare-beta-bank.mjs path/to/set`.
 

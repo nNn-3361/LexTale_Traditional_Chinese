@@ -5,25 +5,53 @@
 // The output is generated and not committed (see .gitignore).
 //
 // Usage: node scripts/prepare-beta-bank.mjs [path/to/set]
-// Default set: stimuli/sets/pilot-draft-v1
+// Default set: stimuli/sets/pilot-v2
 import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const webDir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const setDir = resolve(process.argv[2] ?? join(webDir, "..", "stimuli", "sets", "pilot-draft-v1"));
+const setDir = resolve(process.argv[2] ?? join(webDir, "..", "stimuli", "sets", "pilot-v2"));
 const outDir = join(webDir, ".beta-bank");
 
-const csv = readFileSync(join(setDir, "items.csv"), "utf8").replace(/^﻿/, "");
-const lines = csv.split(/\r?\n/).filter((l) => l.trim() !== "");
-// The item CSVs have no quoted fields; refuse anything that does rather than misread it.
-if (lines.some((l) => l.includes('"'))) throw new Error("items.csv has quoted fields; this script does not parse them");
-const header = lines[0].split(",");
-const rows = lines.slice(1).map((l) => {
-  const cells = l.split(",");
-  if (cells.length !== header.length) throw new Error(`Wrong number of columns: ${l}`);
+if (!existsSync(join(setDir, "items.csv"))) {
+  throw new Error(`No item set at ${setDir}: add items.csv and images/ there, or pass the set folder as an argument`);
+}
+
+const csv = readFileSync(join(setDir, "items.csv"), "utf8").replace(/^\uFEFF/, "");
+
+// Parses CSV with quoted fields ("..." with "" for a quote), as the
+// pseudo-character maker writes them (its crop and move columns hold JSON with commas).
+function parseCsv(text) {
+  const out = [];
+  let row = [], cell = "", quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) {
+      if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; }
+      else if (c === '"') quoted = false;
+      else cell += c;
+    } else if (c === '"') quoted = true;
+    else if (c === ",") { row.push(cell); cell = ""; }
+    else if (c === "\n" || c === "\r") {
+      if (c === "\r" && text[i + 1] === "\n") i++;
+      row.push(cell); out.push(row); row = []; cell = "";
+    } else cell += c;
+  }
+  if (quoted) throw new Error("items.csv has an unclosed quote");
+  if (cell !== "" || row.length) { row.push(cell); out.push(row); }
+  return out.filter((r) => r.some((v) => v.trim() !== ""));
+}
+
+const [header, ...body] = parseCsv(csv);
+const rows = body.map((cells) => {
+  if (cells.length !== header.length) throw new Error(`Wrong number of columns: ${cells.join(",")}`);
   return Object.fromEntries(header.map((h, i) => [h, cells[i]]));
 });
+
+// Images are read from images/ in the set folder, or from the set folder itself
+// (the layout of the pseudo-character maker's ZIP).
+const imageDir = existsSync(join(setDir, "images")) ? join(setDir, "images") : setDir;
 
 const num = (v) => (v === undefined || v === "" ? null : Number(v));
 
@@ -32,7 +60,7 @@ mkdirSync(join(outDir, "images"), { recursive: true });
 
 const items = rows.map((r) => {
   if (r.lexicality !== "real" && r.lexicality !== "pseudo") throw new Error(`Bad lexicality for ${r.item_id}`);
-  const src = join(setDir, "images", r.image);
+  const src = join(imageDir, basename(r.image));
   if (!existsSync(src)) throw new Error(`Missing image ${src}`);
   copyFileSync(src, join(outDir, "images", basename(r.image)));
   return {
