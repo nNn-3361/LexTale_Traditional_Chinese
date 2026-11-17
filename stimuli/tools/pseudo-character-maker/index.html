@@ -160,10 +160,10 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
             </div>
             <div class="tools" id="moveTools" role="group" aria-label="移動與縮放">
               <div class="seg" role="group" aria-label="選擇部件"><button id="selA" aria-pressed="true">部件 A</button><button id="selB" aria-pressed="false">部件 B</button></div>
-              <label class="check" style="color:var(--muted)"><span id="sx-l">寬 100%</span><input id="sx" type="range" min="40" max="160" value="100"></label>
-              <label class="check" style="color:var(--muted)"><span id="sy-l">高 100%</span><input id="sy" type="range" min="40" max="160" value="100"></label>
-              <label class="check"><input id="lock" type="checkbox" checked> 鎖定長寬比</label>
-              <button id="resetMove">回到自動排版</button>
+              <label class="check" style="color:var(--muted)"><span id="sx-l">寬 100%</span><input id="sx" type="range" min="10" max="300" value="100"></label>
+              <label class="check" style="color:var(--muted)"><span id="sy-l">高 100%</span><input id="sy" type="range" min="10" max="300" value="100"></label>
+              <label class="check"><input id="lock" type="checkbox"> 鎖定長寬比</label>
+              <button id="resetMove">重新自動排版</button>
               <div class="note" id="moveInfo" style="flex-basis:100%;text-align:center"></div>
             </div>
             <div class="tools" id="eraseTools" role="group" aria-label="橡皮擦" hidden>
@@ -199,7 +199,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
         <button id="clear">清空清單</button>
       </div>
       <div class="status" id="status" role="status" style="margin-top:8px"></div>
-      <p class="note">清單只存在這個瀏覽器。CSV 欄位：題號、真／假、字、來源 A、來源 B、結構、切線、保留哪一半、裁切框、移動與縮放、切法、是否手動擦除、擦除紀錄、字型、圖檔名。</p>
+      <p class="note">清單只存在這個瀏覽器。CSV 欄位：題號、真／假、字、來源 A、來源 B、結構、切線、保留哪一半、裁切框、移動與縮放、切法、是否手動擦除、擦除紀錄、字型、圖檔名，以及排版方式、各部件位置與大小、各部件的擦除紀錄。</p>
     </section>
   </div>
 </div>
@@ -211,11 +211,14 @@ const $ = id => document.getElementById(id);
 const FONTS = { sans: '"Noto Sans TC"', serif: '"Noto Serif TC"' };
 const S = 400;
 const NOMOVE = { dx: 0, dy: 0, sx: 1, sy: 1 };
+// A part's place on the result (manual layout): out = (src - S/2) * s + S/2 + d, per axis, in 400 x 400 glyph pixels.
+const NOPOS = { dx: 0, dy: 0, sx: 1, sy: 1 };
 const KS = ['A', 'B'];
 const state = {
   struct: 'lr', font: 'sans', items: [], seq: { P: 0, R: 0 }, erase: [], mode: 'move', sel: 'A',
   // editor: crop box per source, as [left, top, right, bottom] in % of the glyph; pre = which preset made it
-  ed: { A: { crop: [0, 0, 50, 100], pre: 'first', mv: { ...NOMOVE } }, B: { crop: [50, 0, 100, 100], pre: 'second', mv: { ...NOMOVE } } },
+  // pos = the part's place on the result (manual layout); erase = list of strokes, each { A?, B? } (one per part it touched)
+  ed: { A: { crop: [0, 0, 50, 100], pre: 'first', pos: { ...NOPOS } }, B: { crop: [50, 0, 100, 100], pre: 'second', pos: { ...NOPOS } } },
 };
 let downloads = null;
 
@@ -272,6 +275,8 @@ function presetCrop(struct, pre, cut) {
 const sideOf = (it, k) => it[k] || (k === 'sideA' ? 'first' : 'second');
 const cropOf = (it, k) => it['crop' + k] || presetCrop(it.struct, sideOf(it, 'side' + k), it['cut' + k]);
 const moveOf = (it, k) => it['move' + k] || NOMOVE;
+const posOf = (it, k) => it['pos' + k] || NOPOS;
+const isManual = it => it.layout === 'manual';
 const isMoved = m => !!m && (m.dx !== 0 || m.dy !== 0 || m.sx !== 1 || m.sy !== 1);
 // If a crop is a half glyph along the structure's axis, return { side, cut } (for the cut_* / keep_* CSV columns).
 function halfOf(struct, c) {
@@ -322,6 +327,15 @@ function kept(ch, crop, mode) {
   const c = document.createElement('canvas'); c.width = c.height = S; c.getContext('2d').putImageData(img, 0, 0);
   const r = { c, mixed }; kcache.set(key, r); return r;
 }
+function applyErase0(x, strokes) { // strokes painted with the current composite operation
+  x.save(); x.lineCap = x.lineJoin = 'round'; x.strokeStyle = x.fillStyle = '#000';
+  for (const st of strokes) {
+    x.lineWidth = st.r * 2; x.beginPath();
+    st.p.forEach(([px, py], i) => i ? x.lineTo(px, py) : x.moveTo(px, py));
+    if (st.p.length === 1) { x.arc(st.p[0][0], st.p[0][1], st.r, 0, Math.PI * 2); x.fill(); } else x.stroke();
+  }
+  x.restore();
+}
 function applyErase(x, strokes) {
   if (!strokes || !strokes.length) return;
   x.save(); x.globalCompositeOperation = 'destination-out'; x.lineCap = x.lineJoin = 'round'; x.strokeStyle = x.fillStyle = '#000';
@@ -335,38 +349,102 @@ function applyErase(x, strokes) {
 const SIDE_NAMES = { lr: { first: '左半', second: '右半', whole: '整字', custom: '自訂框' }, tb: { first: '上半', second: '下半', whole: '整字', custom: '自訂框' } };
 const SIDE_CSV = { lr: { first: 'left', second: 'right' }, tb: { first: 'top', second: 'bottom' } };
 const layer = () => { const c = document.createElement('canvas'); c.width = c.height = S; return c; };
-// composite at S×S (black ink on transparent).
-// 1. Automatic layout: the two cropped parts are placed along the structure's axis (left-right or top-bottom).
-// 2. Each part's own move (dx, dy in glyph pixels) and scale (sx, sy, about the centre of its ink) is applied on top.
-// 3. Eraser strokes are applied to the result.
-// c.parts holds the two placed parts (before erasing), used by the editor to highlight and pick a part.
-function compose(it) {
-  const c = layer(), x = c.getContext('2d');
-  if (it.kind === 'real') { x.drawImage(glyph(it.ch), 0, 0); return c; }
-  const mode = it.cutMode || 'line', cA = cropOf(it, 'A'), cB = cropOf(it, 'B'), v = it.struct === 'tb';
-  const ka = kept(it.a, cA, mode), kb = kept(it.b, cB, mode);
-  const la = layer(), lb = layer();
-  const place = (dst, k, r, t) => { // map source span r onto target span t along the structure's axis
-    const s = (t[1] - t[0]) / (r[1] - r[0]), o = t[0] - r[0] * s, y = dst.getContext('2d');
-    if (!v) y.drawImage(k.c, o, 0, S * s, S); else y.drawImage(k.c, 0, o, S, S * s);
-  };
+// Eraser strokes of a manual-layout item belong to one part and are stored in that source glyph's own pixels,
+// so they follow the part when it is moved or scaled and stay when its crop box changes.
+// A stroke is { r, p, s }: r = brush radius on the result when drawn, p = points in source glyph pixels,
+// s = [sx, sy] = the part's scale when drawn (so the brush keeps its drawn shape relative to the part).
+const affine = p => [p.sx, 0, 0, p.sy, S / 2 * (1 - p.sx) + p.dx, S / 2 * (1 - p.sy) + p.dy];
+function applyPartErase(x, pos, strokes) {
+  if (!strokes || !strokes.length) return;
+  const T = affine(pos);
+  x.save(); x.globalCompositeOperation = 'destination-out'; x.lineCap = x.lineJoin = 'round'; x.strokeStyle = x.fillStyle = '#000';
+  for (const st of strokes) {
+    const [s0x, s0y] = st.s;
+    x.setTransform(T[0] / s0x, 0, 0, T[3] / s0y, T[4], T[5]);
+    x.lineWidth = st.r * 2; x.beginPath();
+    const q = st.p.map(([px, py]) => [px * s0x, py * s0y]);
+    q.forEach(([px, py], i) => i ? x.lineTo(px, py) : x.moveTo(px, py));
+    if (q.length === 1) { x.arc(q[0][0], q[0][1], st.r, 0, Math.PI * 2); x.fill(); } else x.stroke();
+  }
+  x.restore();
+}
+// a kept source part drawn at its place on the result, with its own eraser strokes
+function partLayer(k, pos, strokes) {
+  const l = layer(), y = l.getContext('2d');
+  y.setTransform(...affine(pos)); y.drawImage(k.c, 0, 0); y.setTransform(1, 0, 0, 1, 0, 0);
+  applyPartErase(y, pos, strokes); return l;
+}
+// Automatic layout of the two cropped parts along the structure's axis:
+// returns [[sourceSpan, targetSpan] for A, same for B] in pixels along the axis, or null when a part has no ink.
+function autoSpans(it, ka, kb) {
+  const v = it.struct === 'tb', cA = cropOf(it, 'A'), cB = cropOf(it, 'B');
   const span = cr => (v ? [cr[1], cr[3]] : [cr[0], cr[2]]).map(p => p / 100 * S);
   const sa = span(cA), sb = span(cB);
   const ink = c => { const p = inkProfile(c, v); let i0 = 0, i1 = S - 1; while (i0 < S && !p[i0]) i0++; while (i1 > 0 && !p[i1]) i1--; return i0 > i1 ? null : [i0, i1 + 1]; };
   if (sa[0] === 0 && sa[1] < S && sb[1] === S && sb[0] > 0) {
     // A is a first half and B a second half: each part keeps its outer margin, and they meet at the midpoint of the two cuts
     const j = (sa[1] + sb[0]) / 2;
-    place(la, ka, [0, sa[1]], [0, j]); place(lb, kb, [sb[0], S], [j, S]);
-  } else {
-    // Any other crop (swapped halves, whole glyph, custom box): a part's outer margin could end up at the join,
-    // so place by ink instead. The two inked parts fill the glyph between the sources' own outer margins, with a small gap.
-    const ea = ink(ka.c), eb = ink(kb.c), ga = ink(glyph(it.a)), gb = ink(glyph(it.b));
-    if (ea && eb && ga && gb) {
-      const m = (ga[0] + S - gb[1]) / 2, gap = S * 0.03, wa = ea[1] - ea[0], wb = eb[1] - eb[0];
-      const ja = m + (S - 2 * m - gap) * wa / (wa + wb);
-      place(la, ka, ea, [m, ja]); place(lb, kb, eb, [ja + gap, S - m]);
-    } else { la.getContext('2d').drawImage(ka.c, 0, 0); lb.getContext('2d').drawImage(kb.c, 0, 0); }
+    return [[[0, sa[1]], [0, j]], [[sb[0], S], [j, S]]];
   }
+  // Any other crop (swapped halves, whole glyph, custom box): a part's outer margin could end up at the join,
+  // so place by ink instead. The two inked parts fill the glyph between the sources' own outer margins, with a small gap.
+  const ea = ink(ka.c), eb = ink(kb.c), ga = ink(glyph(it.a)), gb = ink(glyph(it.b));
+  if (!(ea && eb && ga && gb)) return null;
+  const m = (ga[0] + S - gb[1]) / 2, gap = S * 0.03, wa = ea[1] - ea[0], wb = eb[1] - eb[0];
+  const ja = m + (S - 2 * m - gap) * wa / (wa + wb);
+  return [[ea, [m, ja]], [eb, [ja + gap, S - m]]];
+}
+// the automatic layout of one part as a manual place
+function spanPos(sp, v) {
+  if (!sp) return { ...NOPOS };
+  const [r, t] = sp, s = (t[1] - t[0]) / (r[1] - r[0]), o = t[0] - r[0] * s, d = S / 2 * s + o - S / 2;
+  return v ? { dx: 0, dy: d, sx: 1, sy: s } : { dx: d, dy: 0, sx: s, sy: 1 };
+}
+const roundPos = p => ({ dx: Math.round(p.dx * 10) / 10, dy: Math.round(p.dy * 10) / 10, sx: Math.round(p.sx * 1000) / 1000, sy: Math.round(p.sy * 1000) / 1000 });
+// The places an item's parts have on the result.
+// Manual layout: as stored. Automatic layout (items made before manual layout existed): the automatic layout,
+// then the item's own move and scale about the centre of the part's ink, written as one place.
+function placesOf(it) {
+  if (isManual(it)) return { A: { ...posOf(it, 'A') }, B: { ...posOf(it, 'B') } };
+  const mode = it.cutMode || 'line', ka = kept(it.a, cropOf(it, 'A'), mode), kb = kept(it.b, cropOf(it, 'B'), mode);
+  const sp = autoSpans(it, ka, kb), v = it.struct === 'tb', r = {};
+  KS.forEach((k, i) => {
+    const p = spanPos(sp && sp[i], v), m = moveOf(it, k);
+    if (isMoved(m)) {
+      const b = inkBox(partLayer(i ? kb : ka, p)), cx = b ? (b[0] + b[2]) / 2 : S / 2, cy = b ? (b[1] + b[3]) / 2 : S / 2;
+      p.dx = (S / 2 + p.dx - cx) * m.sx + cx + m.dx - S / 2; p.sx *= m.sx;
+      p.dy = (S / 2 + p.dy - cy) * m.sy + cy + m.dy - S / 2; p.sy *= m.sy;
+    }
+    r[k] = roundPos(p);
+  });
+  return r;
+}
+// composite at S×S (black ink on transparent).
+// Manual layout: each part is drawn at its own place with its own eraser strokes; nothing about one part changes the other.
+// Automatic layout (older items, rendered exactly as before):
+// 1. The two cropped parts are placed along the structure's axis (left-right or top-bottom).
+// 2. Each part's own move (dx, dy in glyph pixels) and scale (sx, sy, about the centre of its ink) is applied on top.
+// 3. Eraser strokes are applied to the result.
+// c.parts holds the two placed parts, used by the editor to highlight and pick a part.
+function compose(it) {
+  const c = layer(), x = c.getContext('2d');
+  if (it.kind === 'real') { x.drawImage(glyph(it.ch), 0, 0); return c; }
+  const mode = it.cutMode || 'line', cA = cropOf(it, 'A'), cB = cropOf(it, 'B'), v = it.struct === 'tb';
+  const ka = kept(it.a, cA, mode), kb = kept(it.b, cB, mode);
+  if (isManual(it)) {
+    const parts = [partLayer(ka, posOf(it, 'A'), it.eraseA), partLayer(kb, posOf(it, 'B'), it.eraseB)];
+    x.drawImage(parts[0], 0, 0); x.drawImage(parts[1], 0, 0);
+    c.mixed = [ka.mixed, kb.mixed]; c.parts = parts;
+    return c;
+  }
+  const la = layer(), lb = layer();
+  const place = (dst, k, r, t) => { // map source span r onto target span t along the structure's axis
+    const s = (t[1] - t[0]) / (r[1] - r[0]), o = t[0] - r[0] * s, y = dst.getContext('2d');
+    if (!v) y.drawImage(k.c, o, 0, S * s, S); else y.drawImage(k.c, 0, o, S, S * s);
+  };
+  const sp = autoSpans(it, ka, kb);
+  if (sp) { place(la, ka, ...sp[0]); place(lb, kb, ...sp[1]); }
+  else { la.getContext('2d').drawImage(ka.c, 0, 0); lb.getContext('2d').drawImage(kb.c, 0, 0); }
   const parts = [[la, moveOf(it, 'A')], [lb, moveOf(it, 'B')]].map(([l, m]) => {
     if (!isMoved(m)) return l;
     const b = inkBox(l); if (!b) return l;
@@ -411,12 +489,34 @@ const firstChar = v => Array.from(v.trim())[0] || '';
 const ch = k => firstChar($('in' + k).value);
 function cur() {
   const e = state.ed;
-  return { kind: 'pseudo', a: ch('A'), b: ch('B'), struct: state.struct, cropA: e.A.crop.slice(), cropB: e.B.crop.slice(), moveA: { ...e.A.mv }, moveB: { ...e.B.mv }, cutMode: $('cutStroke').checked ? 'stroke' : 'line', erase: state.erase.map(e => ({ r: e.r, p: e.p.slice() })) };
+  const er = k => state.erase.filter(x => x[k]).map(x => copyStroke(x[k]));
+  return { kind: 'pseudo', layout: 'manual', a: ch('A'), b: ch('B'), struct: state.struct, cropA: e.A.crop.slice(), cropB: e.B.crop.slice(), posA: { ...e.A.pos }, posB: { ...e.B.pos }, cutMode: $('cutStroke').checked ? 'stroke' : 'line', eraseA: er('A'), eraseB: er('B') };
 }
-// Eraser strokes are drawn on the final picture, so they no longer fit once a crop or a position changes.
-function dropErase() {
-  if (!state.erase.length) return;
-  state.erase = []; status('裁切或位置改變了，已清除先前的擦除（擦除位置會對不上）。');
+const copyStroke = st => ({ r: st.r, s: st.s.slice(), p: st.p.map(q => q.slice()) });
+// A changed source character makes that part's eraser strokes meaningless; the other part keeps its strokes.
+function dropEraseOf(k) {
+  if (!state.erase.some(x => x[k])) return;
+  state.erase = state.erase.map(x => { const y = { ...x }; delete y[k]; return y; }).filter(x => x.A || x.B);
+  status(`來源字 ${k} 換了，已清除部件 ${k} 的擦除。`);
+}
+// Put the selected parts at the place the automatic layout gives them for the current crops.
+// The other part is not touched. Used for a new character pair, a new structure, and "重新自動排版".
+function relayout(keys) {
+  const it = cur(); if (!it.a || !it.b) return;
+  it.layout = 'auto'; delete it.moveA; delete it.moveB;
+  const p = placesOf(it); for (const k of keys) state.ed[k].pos = p[k];
+}
+// A brush stroke drawn on the result (points in result pixels), written in the source glyph pixels of part k.
+function strokeFor(k, r, pts, pos = state.ed[k].pos) {
+  const T = affine(pos), R = v => Math.round(v * 10) / 10;
+  return { r, s: [pos.sx, pos.sy], p: pts.map(([x, y]) => [R((x - T[4]) / T[0]), R((y - T[5]) / T[3])]) };
+}
+// does a stroke (result pixels) cover any ink of a placed part
+function touches(part, r, pts) {
+  const t = layer(), y = t.getContext('2d', { willReadFrequently: true });
+  y.drawImage(part, 0, 0); y.globalCompositeOperation = 'destination-in';
+  applyErase0(y, [{ r, p: pts }]);
+  const d = y.getImageData(0, 0, S, S).data; for (let i = 3; i < d.length; i += 4) if (d[i]) return true; return false;
 }
 function refresh() {
   const it = cur(), nm = SIDE_NAMES[state.struct];
@@ -427,21 +527,17 @@ function refresh() {
   }
   const swapped = state.ed.A.pre === 'second' || state.ed.B.pre === 'first';
   $('st-hint').textContent = `A 取${nm[state.ed.A.pre]} ＋ B 取${nm[state.ed.B.pre]}` + (swapped ? '（部件換位）' : '');
-  const m = state.ed[state.sel].mv;
-  $('sx').value = Math.round(m.sx * 100); $('sy').value = Math.round(m.sy * 100);
-  $('sx-l').textContent = `寬 ${Math.round(m.sx * 100)}%`; $('sy-l').textContent = `高 ${Math.round(m.sy * 100)}%`;
+  const m = state.ed[state.sel].pos, pc = v => Math.round(v * 100);
+  $('sx').value = pc(m.sx); $('sy').value = pc(m.sy);
+  $('sx-l').textContent = `寬 ${pc(m.sx)}%`; $('sy-l').textContent = `高 ${pc(m.sy)}%`;
   $('selA').setAttribute('aria-pressed', state.sel === 'A'); $('selB').setAttribute('aria-pressed', state.sel === 'B');
-  const moved = KS.filter(k => isMoved(state.ed[k].mv));
-  $('moveInfo').textContent = moved.length
-    ? moved.map(k => { const v = state.ed[k].mv; return `${k}：右 ${v.dx}、下 ${v.dy}、寬 ${Math.round(v.sx * 100)}%、高 ${Math.round(v.sy * 100)}%`; }).join('　')
-    : '自動排版（未移動）';
-  $('resetMove').disabled = !moved.length;
+  $('moveInfo').textContent = KS.map(k => { const v = state.ed[k].pos; return `${k}：寬 ${pc(v.sx)}%、高 ${pc(v.sy)}%（相對原字）`; }).join('　') + '。調整一個部件不會改變另一個。';
   if (!it.a || !it.b) { $('addPseudo').disabled = true; return; }
   paint($('cvA'), glyph(it.a), { crop: it.cropA });
   paint($('cvB'), glyph(it.b), { crop: it.cropB });
   const out = compose(it);
   let hl = null;
-  if (state.mode === 'move') { hl = layer(); const y = hl.getContext('2d'); y.drawImage(out.parts[state.sel === 'A' ? 0 : 1], 0, 0); applyErase(y, it.erase); }
+  if (state.mode === 'move') hl = out.parts[state.sel === 'A' ? 0 : 1];
   paint($('cvOut'), out, { grid: true, hl });
   const [ma, mb] = out.mixed, w = $('cutWarn');
   const warns = [];
@@ -449,14 +545,15 @@ function refresh() {
   if (bad.length) warns.push(`切線穿過${bad.join('、')}相連的筆畫，該處仍是直線切，可換來源字或用橡皮擦`);
   const edge = KS.filter((k, i) => { const b = inkBox(out.parts[i]); return b && (b[0] <= 0 || b[1] <= 0 || b[2] >= S || b[3] >= S); });
   if (edge.length) warns.push(`部件 ${edge.join('、')} 碰到或超出圖框邊緣，超出的部分會被切掉`);
-  if (KS.some(k => { const v = state.ed[k].mv; return Math.abs(v.sx - v.sy) > 0.001; })) warns.push('寬高比例不同，筆畫粗細可能和真字不一致');
+  // the automatic layout itself squeezes a part a little along the axis, so only a clear difference is flagged
+  if (KS.some(k => { const v = state.ed[k].pos; return Math.max(v.sx, v.sy) / Math.min(v.sx, v.sy) > 1.2; })) warns.push('寬高比例差很多，筆畫粗細可能和真字不一致');
   w.innerHTML = '';
   for (const t of warns) { const s = document.createElement('span'); s.className = 'chip warn'; s.textContent = t; w.append(s); }
   $('undoErase').disabled = $('clearErase').disabled = !state.erase.length;
   $('addPseudo').disabled = false;
 }
 function setCrop(k, c, pre) {
-  state.ed[k].crop = c; state.ed[k].pre = pre; dropErase();
+  state.ed[k].crop = c; state.ed[k].pre = pre;
 }
 function setPreset(k, pre) {
   const c = ch(k); if (!c) return;
@@ -464,12 +561,13 @@ function setPreset(k, pre) {
 }
 function setStruct(s) {
   state.struct = s; $('st-lr').setAttribute('aria-pressed', s === 'lr'); $('st-tb').setAttribute('aria-pressed', s === 'tb');
-  state.ed.A.pre = 'first'; state.ed.B.pre = 'second'; state.ed.A.mv = { ...NOMOVE }; state.ed.B.mv = { ...NOMOVE }; dropErase(); doAuto();
+  state.ed.A.pre = 'first'; state.ed.B.pre = 'second'; doAuto(KS);
 }
 // Re-run the automatic cut for every source whose crop came from a preset (custom boxes are left alone).
-function doAuto() {
+// Then put the parts in keys (if any) at their automatic place; the others keep their place.
+function doAuto(keys = []) {
   for (const k of KS) { const e = state.ed[k], c = ch(k); if (c && e.pre !== 'custom') e.crop = presetCrop(state.struct, e.pre, e.pre === 'whole' ? 50 : autoCut(c)); }
-  refresh();
+  relayout(keys); refresh();
 }
 
 // ---------- list ----------
@@ -493,8 +591,8 @@ function renderList() {
         const ha = halfOf(it.struct, cropOf(it, 'A')), hb = halfOf(it.struct, cropOf(it, 'B'));
         if (!ha || !hb) tags += ' ・ 裁切';
         else if (ha.side !== 'first' || hb.side !== 'second') tags += ' ・ 換位';
-        if (KS.some(k => isMoved(moveOf(it, k)))) tags += ' ・ 移動';
-        if (it.erase && it.erase.length) tags += ' ・ 手動';
+        if (!isManual(it) && KS.some(k => isMoved(moveOf(it, k)))) tags += ' ・ 移動';
+        if (hasErase(it)) tags += ' ・ 手動';
       }
       meta.textContent = it.kind === 'real' ? it.ch : `${it.a}＋${it.b}` + tags;
       if (it.kind === 'pseudo') { cv.style.cursor = 'pointer'; cv.title = '載入編輯區'; cv.onclick = () => loadIntoEditor(it); }
@@ -507,13 +605,24 @@ function renderList() {
 function loadIntoEditor(it) {
   $('inA').value = it.a; $('inB').value = it.b; state.struct = it.struct;
   $('st-lr').setAttribute('aria-pressed', it.struct === 'lr'); $('st-tb').setAttribute('aria-pressed', it.struct === 'tb');
+  $('cutStroke').checked = (it.cutMode || 'line') === 'stroke';
+  const places = placesOf(it);
   for (const k of KS) {
     const c = cropOf(it, k).slice(), h = halfOf(it.struct, c);
-    state.ed[k] = { crop: c, pre: h ? h.side : isWhole(c) ? 'whole' : 'custom', mv: { ...moveOf(it, k) } };
+    state.ed[k] = { crop: c, pre: h ? h.side : isWhole(c) ? 'whole' : 'custom', pos: places[k] };
   }
-  $('cutStroke').checked = (it.cutMode || 'line') === 'stroke'; state.erase = (it.erase || []).map(e => ({ r: e.r, p: e.p.slice() })); refresh();
+  if (isManual(it)) state.erase = [...(it.eraseA || []).map(st => ({ A: copyStroke(st) })), ...(it.eraseB || []).map(st => ({ B: copyStroke(st) }))];
+  else { // older item: its strokes were drawn on the result; give each stroke to the parts whose ink it covers
+    const out = compose({ ...it, erase: [] }); state.erase = [];
+    for (const st of it.erase || []) {
+      const x = {}; KS.forEach((k, i) => { if (touches(out.parts[i], st.r, st.p)) x[k] = strokeFor(k, st.r, st.p); });
+      if (x.A || x.B) state.erase.push(x);
+    }
+  }
+  refresh();
 }
 const pad = n => String(n).padStart(3, '0');
+const hasErase = it => !!((it.erase && it.erase.length) || (it.eraseA && it.eraseA.length) || (it.eraseB && it.eraseB.length));
 function addPseudo() {
   const it = cur(); it.id = 'P' + pad(++state.seq.P);
   state.items.push(it); save(); renderList(); status(`已加入 ${it.id}`);
@@ -530,16 +639,18 @@ function status(t) { $('status').textContent = t; }
 
 // ---------- export ----------
 function csvText() {
-  const rows = [['item_id', 'lexicality', 'char', 'source_a', 'source_b', 'structure', 'cut_a', 'cut_b', 'keep_a', 'keep_b', 'crop_a', 'crop_b', 'move_a', 'move_b', 'cut_mode', 'manual_edit', 'erase_strokes', 'font', 'image']];
+  const rows = [['item_id', 'lexicality', 'char', 'source_a', 'source_b', 'structure', 'cut_a', 'cut_b', 'keep_a', 'keep_b', 'crop_a', 'crop_b', 'move_a', 'move_b', 'cut_mode', 'manual_edit', 'erase_strokes', 'font', 'image', 'layout', 'place_a', 'place_b', 'erase_a', 'erase_b']];
   const fontName = state.font === 'sans' ? 'Noto Sans TC' : 'Noto Serif TC';
   const mv = m => JSON.stringify([m.dx, m.dy, m.sx, m.sy]);
   for (const it of state.items) {
-    if (it.kind === 'real') { rows.push([it.id, 'real', it.ch, '', '', '', '', '', '', '', '', '', '', '', '', 'no', '', fontName, it.id + '.png']); continue; }
-    const cA = cropOf(it, 'A'), cB = cropOf(it, 'B'), hA = halfOf(it.struct, cA), hB = halfOf(it.struct, cB);
+    if (it.kind === 'real') { rows.push([it.id, 'real', it.ch, '', '', '', '', '', '', '', '', '', '', '', '', 'no', '', fontName, it.id + '.png', '', '', '', '', '']); continue; }
+    const cA = cropOf(it, 'A'), cB = cropOf(it, 'B'), hA = halfOf(it.struct, cA), hB = halfOf(it.struct, cB), man = isManual(it);
     rows.push([it.id, 'pseudo', '', it.a, it.b, it.struct === 'lr' ? '⿰' : '⿱',
       hA ? hA.cut : '', hB ? hB.cut : '', hA ? SIDE_CSV[it.struct][hA.side] : '', hB ? SIDE_CSV[it.struct][hB.side] : '',
-      JSON.stringify(cA), JSON.stringify(cB), mv(moveOf(it, 'A')), mv(moveOf(it, 'B')),
-      it.cutMode || 'line', it.erase && it.erase.length ? 'yes' : 'no', it.erase && it.erase.length ? JSON.stringify(it.erase) : '', fontName, it.id + '.png']);
+      JSON.stringify(cA), JSON.stringify(cB), man ? '' : mv(moveOf(it, 'A')), man ? '' : mv(moveOf(it, 'B')),
+      it.cutMode || 'line', hasErase(it) ? 'yes' : 'no', it.erase && it.erase.length ? JSON.stringify(it.erase) : '', fontName, it.id + '.png',
+      man ? 'manual' : 'auto', man ? mv(posOf(it, 'A')) : '', man ? mv(posOf(it, 'B')) : '',
+      man && it.eraseA && it.eraseA.length ? JSON.stringify(it.eraseA) : '', man && it.eraseB && it.eraseB.length ? JSON.stringify(it.eraseB) : '']);
   }
   return '﻿' + rows.map(r => r.map(v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v).join(',')).join('\n');
 }
@@ -568,8 +679,8 @@ async function rerenderAll() {
 // ---------- wire up ----------
 load(); $('font').value = state.font;
 $('st-lr').onclick = () => setStruct('lr'); $('st-tb').onclick = () => setStruct('tb');
-['inA', 'inB'].forEach(id => $(id).addEventListener('input', async () => { dropErase(); await ensureFont($('inA').value + $('inB').value); doAuto(); }));
-$('auto').onclick = doAuto;
+KS.forEach(k => $('in' + k).addEventListener('input', async () => { dropEraseOf(k); await ensureFont($('inA').value + $('inB').value); doAuto([k]); }));
+$('auto').onclick = () => doAuto();
 $('cutStroke').onchange = refresh;
 
 // crop box: preset buttons, number fields, and dragging on the source glyph
@@ -626,7 +737,7 @@ function setMode(m) {
 }
 function select(k) { state.sel = k; refresh(); }
 function nudge(dx, dy) {
-  const m = state.ed[state.sel].mv; m.dx = Math.round(m.dx + dx); m.dy = Math.round(m.dy + dy); dropErase(); refresh();
+  const m = state.ed[state.sel].pos; m.dx = Math.round((m.dx + dx) * 10) / 10; m.dy = Math.round((m.dy + dy) * 10) / 10; refresh();
 }
 // which part has ink under the point (the selected part wins where they overlap)
 function partAt([px, py]) {
@@ -641,33 +752,52 @@ $('selA').onclick = () => select('A'); $('selB').onclick = () => select('B');
 cvOut.addEventListener('pointerdown', e => {
   if (!ch('A') || !ch('B')) return;
   e.preventDefault(); cvOut.focus({ preventScroll: true }); cvOut.setPointerCapture(e.pointerId);
-  if (state.mode === 'erase') { drawing = { r: +$('brush').value / 2, p: [toS(e)] }; state.erase.push(drawing); refresh(); return; }
+  if (state.mode === 'erase') {
+    // a stroke is given to both parts while it is drawn, then kept only for the parts whose ink it covers
+    const others = compose(cur()).parts; drawing = { r: +$('brush').value / 2, p: [toS(e)], x: {}, others }; state.erase.push(drawing.x); drawStroke(); return;
+  }
   const p = toS(e), k = partAt(p); if (k) state.sel = k;
-  moving = { p0: p, m0: { ...state.ed[state.sel].mv } }; refresh();
+  moving = { p0: p, m0: { ...state.ed[state.sel].pos } }; refresh();
 });
 cvOut.addEventListener('pointermove', e => {
-  if (drawing) { drawing.p.push(toS(e)); refresh(); return; }
+  if (drawing) { drawing.p.push(toS(e)); drawStroke(); return; }
   if (!moving) return;
-  const p = toS(e), m = state.ed[state.sel].mv;
-  const dx = Math.round(moving.m0.dx + p[0] - moving.p0[0]), dy = Math.round(moving.m0.dy + p[1] - moving.p0[1]);
-  if (dx !== m.dx || dy !== m.dy) { m.dx = dx; m.dy = dy; dropErase(); refresh(); }
+  const p = toS(e), m = state.ed[state.sel].pos;
+  const dx = Math.round((moving.m0.dx + p[0] - moving.p0[0]) * 10) / 10, dy = Math.round((moving.m0.dy + p[1] - moving.p0[1]) * 10) / 10;
+  if (dx !== m.dx || dy !== m.dy) { m.dx = dx; m.dy = dy; refresh(); }
 });
-const endPtr = () => { drawing = null; moving = null; };
+function drawStroke() { for (const k of KS) drawing.x[k] = strokeFor(k, drawing.r, drawing.p); refresh(); }
+const endPtr = () => {
+  if (drawing) {
+    const d = drawing; KS.forEach((k, i) => { if (!touches(d.others[i], d.r, d.p)) delete d.x[k]; });
+    if (!d.x.A && !d.x.B) state.erase = state.erase.filter(x => x !== d.x);
+    drawing = null; refresh();
+  }
+  moving = null;
+};
 cvOut.addEventListener('pointerup', endPtr); cvOut.addEventListener('pointercancel', endPtr);
 cvOut.addEventListener('keydown', e => {
   if (state.mode !== 'move') return;
   const st = e.shiftKey ? 10 : 1, d = { ArrowLeft: [-st, 0], ArrowRight: [st, 0], ArrowUp: [0, -st], ArrowDown: [0, st] }[e.key];
   if (d) { e.preventDefault(); nudge(...d); }
 });
+// Scale the selected part about the centre of its ink; the other part is not touched.
 function setScale(which, v) {
-  const m = state.ed[state.sel].mv, s = Math.round(v) / 100;
-  if ($('lock').checked) m.sx = m.sy = s; else m[which] = s;
-  dropErase(); refresh();
+  const k = state.sel, m = state.ed[k].pos, s = Math.round(v) / 100, c = ch(k);
+  const b = c ? inkBox(kept(c, state.ed[k].crop, $('cutStroke').checked ? 'stroke' : 'line').c) : null;
+  const cx = b ? (b[0] + b[2]) / 2 : S / 2, cy = b ? (b[1] + b[3]) / 2 : S / 2;
+  const set = (ax, val) => { // keep the ink centre where it is on the result
+    const ctr = ax === 'sx' ? cx : cy, d = ax === 'sx' ? 'dx' : 'dy';
+    const at = (ctr - S / 2) * m[ax] + S / 2 + m[d];
+    m[ax] = val; m[d] = Math.round((at - (ctr - S / 2) * val - S / 2) * 10) / 10;
+  };
+  if ($('lock').checked) { set('sx', s); set('sy', s); } else set(which, s);
+  refresh();
 }
 $('sx').addEventListener('input', e => setScale('sx', +e.target.value));
 $('sy').addEventListener('input', e => setScale('sy', +e.target.value));
 $('lock').onchange = () => { if ($('lock').checked) setScale('sx', +$('sx').value); };
-$('resetMove').onclick = () => { for (const k of KS) state.ed[k].mv = { ...NOMOVE }; dropErase(); refresh(); };
+$('resetMove').onclick = () => { relayout(KS); refresh(); };
 $('undoErase').onclick = () => { state.erase.pop(); refresh(); };
 $('clearErase').onclick = () => { state.erase = []; refresh(); };
 $('addPseudo').onclick = addPseudo;
@@ -683,7 +813,7 @@ $('zip').onclick = doZip;
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { refresh(); renderList(); });
 new MutationObserver(() => { refresh(); renderList(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-setMode('move'); renderList(); rerenderAll().then(doAuto);
+setMode('move'); renderList(); rerenderAll().then(() => doAuto(KS));
 if (window.claude && window.claude.use) window.claude.use('downloads').then(d => { downloads = d; renderList(); if (!d) status('這個檢視無法下載檔案，請在 claude.ai 開啟。'); });
 else { // opened as a local file: use an ordinary browser download
   downloads = { save: async ({ filename, data }) => {
