@@ -2,7 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
-- 2026-11-17: Pseudo-character maker: manual layout, so each part keeps its own place and size (width and height set separately, 10% to 300%) and changing one part's crop or scale no longer resizes the other; eraser strokes now belong to a part and stay when it is moved, scaled or re-cropped, until undone. Older items render unchanged; the CSV adds layout, place and per-part erase columns. ([TBD])
+- 2026-11-17: Pseudo-character maker: manual layout, so each part keeps its own place and size (width and height set separately, 10% to 300%) and changing one part's crop or scale no longer resizes the other; eraser strokes now belong to a part and stay when it is moved, scaled or re-cropped, until undone. Older items render unchanged; the CSV adds layout, place and per-part erase columns. (#13)
 - 2026-11-17: Removed the first 180-item pilot draft pool (`stimuli/sets/pilot-draft-v1/`) because the team made a new item set; the beta and pilot pages now read the set from `stimuli/sets/pilot-v2/`, where the new set will be added. (#12)
 - 2026-11-12: Pseudo-character maker: each source now has a crop box (cut on all four sides) and each part can be moved and scaled on the result; old items render unchanged, and the CSV adds crop and move columns. (#10)
 - 2026-11-11: Rewrote the README for the team and supervisor: decisions so far, current status, the three versions of the test (beta, no-maintenance pilot, full system), item bank, scoring, open issues, and checked references. (#9)
