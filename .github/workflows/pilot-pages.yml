@@ -40,7 +40,6 @@ jobs:
         working-directory: web
         env:
           VITE_RESULTS_URL: ${{ vars.PILOT_RESULTS_URL }}
-          VITE_PILOT_SET: ${{ vars.PILOT_SET }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist-pilot

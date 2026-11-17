@@ -2,7 +2,7 @@
 
 A short, character-based lexical decision test for Traditional Chinese, developed by a research team at National Taipei University of Technology (Taipei Tech). Test takers see one character at a time and decide whether it is a real character or not. The goal is a test of a few minutes that gives Chinese language teachers and researchers a quick estimate of a person's Chinese proficiency.
 
-> **Status (2026-11-17): development, before the pilot.** The first 180-item draft pool was removed; the team's new item set will be added next [TBD]. No participant data has been collected. The final test, its scoring, and its validity are not settled.
+> **Status (2026-11-17): development, before the pilot.** The team's own item set (90 real, 65 pseudo) has been added and is waiting for review. No participant data has been collected. The final test, its scoring, and its validity are not settled.
 
 ---
 
@@ -48,7 +48,7 @@ Made by the team between 2026-11-06 and 2026-11-11:
 | Area | State |
 | --- | --- |
 | Pseudo-character maker tool | Done (`stimuli/tools/pseudo-character-maker/`). |
-| Pilot item pool | First draft removed (2026-11-17); the team made a new set, to be added to `stimuli/sets/pilot-v2/` [TBD]. |
+| Pilot item pool | Team-made set in `stimuli/sets/pilot-v2/` (90 real, 65 pseudo); manual review not finished. |
 | Beta page for the team | Done and online as a private preview (see below). |
 | Pilot page (no server) | Code merged. Not live yet: the Google Sheet and the `PILOT_RESULTS_URL` repository variable still need to be set up (the first workflow run on 2026-11-11 was skipped for this reason). |
 | Full system (FastAPI + MySQL) | Skeleton done. Not deployed; no server. |
@@ -76,11 +76,16 @@ All three use the F key for "real character" and the J key for "not a real chara
 
 ## Item bank
 
-### Pilot item set (`stimuli/sets/pilot-v2/`) [TBD]
+### Pilot item set (`stimuli/sets/pilot-v2/`)
 
-The team made a new set of real and pseudo-characters, which replaces the earlier 180-item draft pool (`pilot-draft-v1`, removed on 2026-11-17; it is still in the git history). The new set will be added to `stimuli/sets/pilot-v2/` in the same format as the pseudo-character maker's ZIP export: `items.csv` plus an `images/` folder with one PNG per item. Its size, item types, and sources will be described here when it is added [TBD].
+The team made its own set of real and pseudo-characters with the pseudo-character maker. It replaces the earlier 180-item draft pool (`pilot-draft-v1`, removed on 2026-11-17; it is still in the git history).
 
-Every item must be checked by a person before the pilot (see [`stimuli/tools/pseudo-character-maker/README.md`](stimuli/tools/pseudo-character-maker/README.md)).
+| Type | Items |
+| --- | --- |
+| Real characters | 90 |
+| Pseudo-characters | 65 |
+
+How the real characters were chosen, and which pseudo-characters use legal or illegal component positions, will be described here [TBD]. Every item is marked `review_status = pending`. The items to check first are listed in [`stimuli/sets/pilot-v2/README.md`](stimuli/sets/pilot-v2/README.md).
 
 ### Final test (planned)
 
@@ -103,7 +108,7 @@ Items the team, and in some cases the supervisor, need to decide or check:
 1. **License of the MOE frequency data.** The frequency tables are not openly licensed (copyright: National Academy for Educational Research). The removed first draft kept the counts of its 90 real characters; it is still in the git history. If the new set uses these counts, whether they may be published under CC BY needs to be confirmed.
 2. **Consent form and ethics review.** The consent text in `web/src/text.ts` is a placeholder. The final text, including where the data are stored (Google for the pilot), needs ethics review approval before any real data are collected.
 3. **Hosting.** Whether the school or the lab can host the full system, and who maintains it. To be discussed with the supervisor. Until then the pilot uses the no-maintenance setup.
-4. **Manual review of the new item set.** Not started; the set has not been added yet [TBD].
+4. **Manual review of the new item set.** Not finished. See the list in the item set's README.
 5. **cjkvi-ids license.** The removed first draft stored structure strings (IDS) from cjkvi-ids; this matters again only if the new set stores them. Its license is GPL-2.0 [Unverified, confidence 60%; check the cjkvi-ids repository]; whether storing these strings is fine needs to be confirmed.
 6. **Participant recruitment.** Channels and target numbers for native speakers and learners [TBD].
 7. **Practice items.** The pool has no dedicated practice items yet; practice currently uses pool items.
@@ -116,7 +121,7 @@ AGENTS.md, CLAUDE.md        Rules for anyone (and any AI assistant) changing thi
 docs/PROJECT_LOG.md         One line per change, newest first
 docs/pilot-hosting.md       Setup and limits of the no-maintenance pilot
 stimuli/tools/pseudo-character-maker/   Browser tool that builds pseudo-character images
-stimuli/sets/pilot-v2/                  The pilot item set: items.csv and images/ [TBD: not added yet]
+stimuli/sets/pilot-v2/                  The pilot item set: items.csv, images/, and the merge script
 web/                        Test pages: beta.html, pilot.html, index.html (full system); apps-script/
 server/                     FastAPI + MySQL backend for the full system (not deployed)
 Dockerfile, docker-compose.yml          Runs the full system

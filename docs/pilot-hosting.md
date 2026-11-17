@@ -16,7 +16,7 @@ It stays in the repository and can be used later.
 1. Consent page (the draft text in `web/src/text.ts`, [TBD]: needs ethics
    review approval) with an optional participant code field.
 2. Instructions, 4 practice items with feedback, then the test items in a new
-   random order (all 180 pilot items by default, 176 after practice).
+   random order (all items in the pilot set, minus the 4 used for practice).
 3. Their answers are sent to the sheet. If sending fails, they can retry or
    download a CSV file to give to the researcher.
 4. A thank-you message and their averaged score. They do not see which items
@@ -56,8 +56,7 @@ version, so the URL stays the same.
 2. Repository Settings > Secrets and variables > Actions > Variables > New
    repository variable: `PILOT_RESULTS_URL` = the web app URL from step 1.
    (It is a variable, not a secret: the URL is in the published page anyway.)
-3. Optional variable `PILOT_SET` = `batch1` to give only the first 90 items.
-4. Actions > Pilot page > Run workflow. Later runs happen on every merge to
+3. Actions > Pilot page > Run workflow. Later runs happen on every merge to
    `main` that changes `web/` or the pilot item set.
 
 The workflow does nothing until `PILOT_RESULTS_URL` is set.

@@ -33,11 +33,10 @@ export async function loadBank(): Promise<Bank> {
   return res.json();
 }
 
-export type SetChoice = "all" | "batch1" | "quick";
+export type SetChoice = "all" | "quick";
 
 export const SET_LABELS: Record<SetChoice, string> = {
-  all: "全部 180 題 / All 180 items",
-  batch1: "第一批 90 題 / Batch 1 (90 items)",
+  all: "全部題目 / All items",
   quick: "快速試用 20 題 / Quick try (20 items)",
 };
 
@@ -68,8 +67,7 @@ const take = (items: Item[], lex: Lexicality, n: number) => shuffle(items.filter
  */
 export function planRun(bank: Item[], choice: SetChoice, withPractice: boolean): Plan {
   let pool: Item[];
-  if (choice === "batch1") pool = bank.filter((i) => i.batch === 1);
-  else if (choice === "quick") pool = [...take(bank, "real", 10), ...take(bank, "pseudo", 10)];
+  if (choice === "quick") pool = [...take(bank, "real", 10), ...take(bank, "pseudo", 10)];
   else pool = bank.slice();
 
   let practice: Item[] = [];
