@@ -2,7 +2,8 @@ import csv, shutil, sys, os
 src = sys.argv[1]; out = sys.argv[2]
 def rows(p): return list(csv.DictReader(open(os.path.join(src, p), encoding='utf-8-sig')))
 real_order2 = '毽鯇氖懿葳玨掂賅蚺綪哏蒿要的是枋輯蒻粵嬡鑫騂酢恬蹔皷萻孖釗閿'
-# final pseudo id -> (file, original id); derived from image modification times and visual check
+# final pseudo id -> (file, original id); derived from image modification times and a visual check
+# of every image. Later batches (items_5, items_6) hold remade items that replace earlier rows.
 pmap = {}
 for i in [1,7,9,10,13,15,16,17,18,19,20,22,23,24,25,26,27,28,29,30,31]: pmap[i] = ('items_1.csv', i)
 for i in [2,3,4,5,6,11,12]: pmap[i] = ('items_2.csv', i)
@@ -10,6 +11,7 @@ pmap.update({21: ('items_2.csv', 1), 32: ('items_2.csv', 8), 33: ('items_2.csv',
 i3 = [1,2,3,4,7] + list(range(9, 26))
 for k, o in zip(range(37, 59), i3): pmap[k] = ('items_3.csv', o)
 pmap.update({8: ('items_5.csv', 1), 14: ('items_5.csv', 2), 39: ('items_5.csv', 4)})
+pmap.update({15: ('items_6.csv', 2), 27: ('items_6.csv', 3), 31: ('items_6.csv', 1)})
 pmap.update({59: ('items_4.csv', 3), 60: ('items_4.csv', 2), 61: ('items_4.csv', 6), 62: ('items_4.csv', 7), 63: ('items_4.csv', 8), 64: ('items_4.csv', 9), 65: ('items_4.csv', 10)})
 assert sorted(pmap) == list(range(1, 66))
 assert len(set(pmap.values())) == 65
@@ -20,7 +22,7 @@ assert sorted(r2) == sorted(real_order2)
 for n, r in enumerate(r1 + [r2[c] for c in real_order2], 1):
     r = dict(r); r['source_file'] = 'real words/' + ('items_1.csv' if n <= 60 else 'items_2.csv'); r['source_item_id'] = r['item_id']
     out_rows.append(r | {'item_id': f'R{n:03d}', 'image': f'R{n:03d}.png'})
-pf = {f: {r['item_id']: r for r in rows('fake words/' + f)} for f in ['items_1.csv','items_2.csv','items_3.csv','items_4.csv','items_5.csv']}
+pf = {f: {r['item_id']: r for r in rows('fake words/' + f)} for f in ['items_1.csv','items_2.csv','items_3.csv','items_4.csv','items_5.csv','items_6.csv']}
 used = set()
 for k in range(1, 66):
     f, o = pmap[k]; r = dict(pf[f][f'P{o:03d}']); used.add((f, o))
