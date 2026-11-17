@@ -163,7 +163,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
               <label class="check" style="color:var(--muted)"><span id="sx-l">寬 100%</span><input id="sx" type="range" min="10" max="300" value="100"></label>
               <label class="check" style="color:var(--muted)"><span id="sy-l">高 100%</span><input id="sy" type="range" min="10" max="300" value="100"></label>
               <label class="check"><input id="lock" type="checkbox"> 鎖定長寬比</label>
-              <button id="resetMove">重新自動排版</button>
+              <button id="resetMove">此部件置中原大小</button>
               <div class="note" id="moveInfo" style="flex-basis:100%;text-align:center"></div>
             </div>
             <div class="tools" id="eraseTools" role="group" aria-label="橡皮擦" hidden>
@@ -493,19 +493,6 @@ function cur() {
   return { kind: 'pseudo', layout: 'manual', a: ch('A'), b: ch('B'), struct: state.struct, cropA: e.A.crop.slice(), cropB: e.B.crop.slice(), posA: { ...e.A.pos }, posB: { ...e.B.pos }, cutMode: $('cutStroke').checked ? 'stroke' : 'line', eraseA: er('A'), eraseB: er('B') };
 }
 const copyStroke = st => ({ r: st.r, s: st.s.slice(), p: st.p.map(q => q.slice()) });
-// A changed source character makes that part's eraser strokes meaningless; the other part keeps its strokes.
-function dropEraseOf(k) {
-  if (!state.erase.some(x => x[k])) return;
-  state.erase = state.erase.map(x => { const y = { ...x }; delete y[k]; return y; }).filter(x => x.A || x.B);
-  status(`來源字 ${k} 換了，已清除部件 ${k} 的擦除。`);
-}
-// Put the selected parts at the place the automatic layout gives them for the current crops.
-// The other part is not touched. Used for a new character pair, a new structure, and "重新自動排版".
-function relayout(keys) {
-  const it = cur(); if (!it.a || !it.b) return;
-  it.layout = 'auto'; delete it.moveA; delete it.moveB;
-  const p = placesOf(it); for (const k of keys) state.ed[k].pos = p[k];
-}
 // A brush stroke drawn on the result (points in result pixels), written in the source glyph pixels of part k.
 function strokeFor(k, r, pts, pos = state.ed[k].pos) {
   const T = affine(pos), R = v => Math.round(v * 10) / 10;
@@ -561,13 +548,13 @@ function setPreset(k, pre) {
 }
 function setStruct(s) {
   state.struct = s; $('st-lr').setAttribute('aria-pressed', s === 'lr'); $('st-tb').setAttribute('aria-pressed', s === 'tb');
-  state.ed.A.pre = 'first'; state.ed.B.pre = 'second'; doAuto(KS);
+  state.ed.A.pre = 'first'; state.ed.B.pre = 'second'; doAuto();
 }
 // Re-run the automatic cut for every source whose crop came from a preset (custom boxes are left alone).
-// Then put the parts in keys (if any) at their automatic place; the others keep their place.
-function doAuto(keys = []) {
+// Crops never move or resize a part: each part keeps its place until the user changes it.
+function doAuto() {
   for (const k of KS) { const e = state.ed[k], c = ch(k); if (c && e.pre !== 'custom') e.crop = presetCrop(state.struct, e.pre, e.pre === 'whole' ? 50 : autoCut(c)); }
-  relayout(keys); refresh();
+  refresh();
 }
 
 // ---------- list ----------
@@ -679,7 +666,8 @@ async function rerenderAll() {
 // ---------- wire up ----------
 load(); $('font').value = state.font;
 $('st-lr').onclick = () => setStruct('lr'); $('st-tb').onclick = () => setStruct('tb');
-KS.forEach(k => $('in' + k).addEventListener('input', async () => { dropEraseOf(k); await ensureFont($('inA').value + $('inB').value); doAuto([k]); }));
+// a new source character keeps both parts' places and all eraser strokes (only 復原 / 清除擦除 remove strokes)
+KS.forEach(k => $('in' + k).addEventListener('input', async () => { await ensureFont($('inA').value + $('inB').value); doAuto(); }));
 $('auto').onclick = () => doAuto();
 $('cutStroke').onchange = refresh;
 
@@ -797,7 +785,7 @@ function setScale(which, v) {
 $('sx').addEventListener('input', e => setScale('sx', +e.target.value));
 $('sy').addEventListener('input', e => setScale('sy', +e.target.value));
 $('lock').onchange = () => { if ($('lock').checked) setScale('sx', +$('sx').value); };
-$('resetMove').onclick = () => { relayout(KS); refresh(); };
+$('resetMove').onclick = () => { state.ed[state.sel].pos = { ...NOPOS }; refresh(); };
 $('undoErase').onclick = () => { state.erase.pop(); refresh(); };
 $('clearErase').onclick = () => { state.erase = []; refresh(); };
 $('addPseudo').onclick = addPseudo;
@@ -813,7 +801,7 @@ $('zip').onclick = doZip;
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { refresh(); renderList(); });
 new MutationObserver(() => { refresh(); renderList(); }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-setMode('move'); renderList(); rerenderAll().then(() => doAuto(KS));
+setMode('move'); renderList(); rerenderAll().then(() => doAuto());
 if (window.claude && window.claude.use) window.claude.use('downloads').then(d => { downloads = d; renderList(); if (!d) status('這個檢視無法下載檔案，請在 claude.ai 開啟。'); });
 else { // opened as a local file: use an ordinary browser download
   downloads = { save: async ({ filename, data }) => {
