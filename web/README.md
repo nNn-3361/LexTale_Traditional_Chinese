@@ -58,12 +58,12 @@ To use another set: `node scripts/prepare-beta-bank.mjs path/to/set`.
 
 Flow:
 
-1. Choose the items: all 180, batch 1 (90), or a quick 20 (10 real, 10 pseudo).
+1. Choose the items: all items in the set, or a quick 20 (10 real, 10 pseudo).
    An optional group label (for example `native` or `learner`) is used to
    compare groups. It must not be a name or student ID.
 2. Instructions, then 4 practice items (2 real, 2 pseudo) with feedback. The
    item set has no separate practice items yet [TBD], so practice items are
-   taken from bank items outside the chosen set; with all 180 they come from
+   taken from bank items outside the chosen set; with all items they come from
    the set and are left out of that run's test.
 3. Test items in a new random order for each run, each after a 500 ms fixation
    cross. Same trial plugin, keys and RT measurement as the real test page.

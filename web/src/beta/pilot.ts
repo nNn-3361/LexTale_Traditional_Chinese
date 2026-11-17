@@ -8,7 +8,6 @@
  * Participants never see which items they got wrong. Build-time settings
  * (see docs/pilot-hosting.md):
  *   VITE_RESULTS_URL  Apps Script web app URL that writes to the sheet
- *   VITE_PILOT_SET    all (default) or batch1
  * Link parameters: ?g=GROUP (for example native or learner) and ?p=CODE
  * (participant code from the researcher). Both accept only letters, digits,
  * "-" and "_", so a name cannot be entered by mistake.
@@ -28,7 +27,7 @@ const CODE_RE = /^[A-Za-z0-9_-]{1,20}$/;
 const params = new URLSearchParams(location.search);
 const clean = (v: string | null) => (v && CODE_RE.test(v) ? v : "");
 const group = clean(params.get("g"));
-const SET: SetChoice = import.meta.env.VITE_PILOT_SET === "batch1" ? "batch1" : "all";
+const SET: SetChoice = "all";
 
 function show(html: string) {
   stage.hidden = true;
