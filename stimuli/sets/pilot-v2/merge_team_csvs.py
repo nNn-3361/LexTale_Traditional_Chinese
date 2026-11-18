@@ -25,6 +25,9 @@ EXCLUDED = {
     'P051': '𨥋', 'P053': '𭦓', 'P054': '聊', 'P056': '𥭋', 'P058': '𫊺', 'P059': '䦦',
     'P060': '𬇏', 'P061': '迌', 'P062': '𠰢', 'P063': '𤡕', 'P064': '𨊸', 'P065': '𪢪',
 }
+# Pseudo-characters the team removed after reviewing the set (2026-11-18). IDs are not reused.
+TEAM_REMOVED = ['P003', 'P004', 'P010', 'P017', 'P018', 'P022', 'P023', 'P026', 'P029',
+                'P040', 'P041', 'P042', 'P046', 'P047', 'P049']
 cols = ['item_id','lexicality','char','source_a','source_b','structure','cut_a','cut_b','keep_a','keep_b','crop_a','crop_b','move_a','move_b','cut_mode','manual_edit','erase_strokes','layout','place_a','place_b','erase_a','erase_b','font','image','source_file','source_item_id','review_status']
 out_rows = []
 r1 = rows('real words/items_1.csv'); r2 = {r['char']: r for r in rows('real words/items_2.csv')}
@@ -40,14 +43,18 @@ for k in range(1, 66):
     out_rows.append(r | {'item_id': f'P{k:03d}', 'image': f'P{k:03d}.png'})
 dropped = [(f, i) for f in pf for i in pf[f] if (f, int(i[1:])) not in used]
 print('dropped rows:', dropped)
-excluded = [r for r in out_rows if r['item_id'] in EXCLUDED]
-assert len(excluded) == len(EXCLUDED)
-out_rows = [r for r in out_rows if r['item_id'] not in EXCLUDED]
+gone = set(EXCLUDED) | set(TEAM_REMOVED)
+assert not set(EXCLUDED) & set(TEAM_REMOVED)
+excluded = [r for r in out_rows if r['item_id'] in gone]
+assert len(excluded) == len(gone)
+out_rows = [r for r in out_rows if r['item_id'] not in gone]
 with open(os.path.join(out, 'excluded.csv'), 'w', encoding='utf-8-sig', newline='') as fh:
-    w = csv.writer(fh, lineterminator='\n'); w.writerow(['item_id', 'source_a', 'source_b', 'existing_char', 'codepoint', 'source_file', 'source_item_id'])
+    w = csv.writer(fh, lineterminator='\n')
+    w.writerow(['item_id', 'source_a', 'source_b', 'reason', 'existing_char', 'codepoint', 'source_file', 'source_item_id'])
     for r in excluded:
-        c = EXCLUDED[r['item_id']]
-        w.writerow([r['item_id'], r['source_a'], r['source_b'], c, f'U+{ord(c):04X}', r['source_file'], r['source_item_id']])
+        c = EXCLUDED.get(r['item_id'])
+        reason = 'exists_in_unicode' if c else 'team_review'
+        w.writerow([r['item_id'], r['source_a'], r['source_b'], reason, c or '', f'U+{ord(c):04X}' if c else '', r['source_file'], r['source_item_id']])
 os.makedirs(os.path.join(out, 'images'), exist_ok=True)
 with open(os.path.join(out, 'items.csv'), 'w', encoding='utf-8-sig', newline='') as fh:
     w = csv.DictWriter(fh, cols, extrasaction='raise', lineterminator='\n'); w.writeheader()
