@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 170">
+  <!-- Corner of a roof eave seen from below, sweeping up at the right end. CSS mask: alpha only. -->
+  <g fill="#000">
+    <path d="M0 18 H560 Q690 18 790 108 Q720 92 650 88 H0Z" fill-opacity="0.32"/>
+    <path d="M0 62 H600 Q700 66 790 108 Q714 96 646 96 H0Z" fill-opacity="0.45"/>
+    <path d="M0 96 H646 Q714 96 790 108 Q720 112 660 112 H0Z" fill-opacity="0.75"/>
+    <path d="M0 112 H660 Q720 112 772 120 Q716 124 664 124 H0Z" fill-opacity="0.3"/>
+    <g fill-opacity="0.5">
+      <path d="M20 112 h8 v14 h-8z M60 112 h8 v14 h-8z M100 112 h8 v14 h-8z M140 112 h8 v14 h-8z M180 112 h8 v14 h-8z M220 112 h8 v14 h-8z M260 112 h8 v14 h-8z M300 112 h8 v14 h-8z M340 112 h8 v14 h-8z M380 112 h8 v14 h-8z M420 112 h8 v14 h-8z M460 112 h8 v14 h-8z M500 112 h8 v14 h-8z M540 112 h8 v14 h-8z M580 112 h8 v14 h-8z M620 112 h8 v13 h-8z"/>
+    </g>
+    <path d="M0 30 H560 v2 H0z M0 44 H580 v2 H0z" fill-opacity="0.35"/>
+    <path d="M770 104 q22 -2 26 -24 q4 18 -10 30z" fill-opacity="0.8"/>
+  </g>
+</svg>

@@ -18,9 +18,11 @@ import type { RunScore } from "./scoring";
 import * as store from "./store";
 import "./beta.css";
 import "./ink.css";
+import { installInkFx } from "./ink-fx";
 
 const app = document.getElementById("app")!;
 const stage = document.getElementById("stage")!;
+installInkFx(app);
 
 let bank: Bank;
 let byId: Map<string, Item>;
