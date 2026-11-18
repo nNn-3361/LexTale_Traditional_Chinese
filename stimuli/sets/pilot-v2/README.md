@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 29 | P006-P080, with gaps (see below) |
+| Pseudo-characters | 37 | P006-P091, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -20,9 +20,12 @@ All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker
 - `excluded.csv`: pseudo-characters left out, with the reason (`exists_in_unicode` or `team_review`, see below).
 - `merge_team_csvs.py`: the script that merged the team's batch exports into `items.csv`
   and copied the images. Usage:
-  `python3 merge_team_csvs.py <team folder> <this folder> <second batch folder>`,
+  `python3 merge_team_csvs.py <team folder> <this folder> <batch 2 folder> <batch 3 folder>`,
   where the team folder has `real words/` and `fake words/` with the exported CSVs and the
-  renamed PNGs, and the second batch folder (`pseudo-characters 2`) has one `items.csv` and its PNGs.
+  renamed PNGs, and each later batch folder (`pseudo-characters 2`, `pseudo-characters 3`) has
+  one `items.csv` and its PNGs.
+- `items.csv` has the maker's `weight_a` and `weight_b` columns (stroke thickness). They are
+  empty for items made before the maker had this setting.
 
 ## How the batch exports were matched to the images [Unverified, confidence 85%; the team must confirm]
 
@@ -82,7 +85,23 @@ Unicode and were left out (in `excluded.csv`):
 | P079 | P026 | ⿰皀攵 | 𢼖 U+22F16 (⿰皀攴) |
 
 The other nine were added: P066, P067, P069, P070, P074, P075, P076, P077, P080.
-29 pseudo-characters remain in total.
+
+## Third batch (2026-11-18)
+
+The team made 11 more (folder `pseudo-characters 3`, team IDs P001-P016 with gaps). They get
+new IDs P081-P091 in file order. Three already exist in Unicode and were left out:
+
+| New ID | Team ID | Shape | Existing character |
+| --- | --- | --- | --- |
+| P082 | P002 | ⿰阝力 | 阞 U+961E |
+| P086 | P008 | ⿸耂占 | 𦒻 U+264BB |
+| P087 | P009 | ⿰金屋 | 𫒷 U+2B4B7 |
+
+P081 (語+湖) looks like 䚴 (⿰言月, U+46B4) but has one extra slanted stroke inside 月. The
+team confirmed the stroke is meant, so P081 is kept.
+
+The other eight were added: P081, P083, P084, P085, P088, P089, P090, P091.
+37 pseudo-characters remain in total.
 
 ## Review before the pilot [TBD]
 
@@ -98,5 +117,6 @@ found while merging (component readings are from the images and may be wrong):
   leftover stroke above 頁.
 - P070 (清+䬤) has a leftover piece at the bottom of 氵, where the left stroke of 尸 was not
   fully erased.
-- The set has 90 real and 29 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+- P089 (霧+緾, 雨 over 厘) has two small stray dots to the left of the character.
+- The set has 90 real and 37 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
   uses 60 real and 30 pseudo in its final test].
