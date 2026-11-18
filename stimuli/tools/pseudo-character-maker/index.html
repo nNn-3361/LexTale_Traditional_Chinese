@@ -232,15 +232,19 @@ function load() {
 // ---------- glyph rendering ----------
 const gcache = new Map();
 function fam() { return FONTS[state.font]; }
+// A glyph drawn before the web font has loaded uses a fallback font. Such a glyph is marked and not cached,
+// so it is drawn again with the right font once the font is ready (otherwise it could end up in an export).
 function glyph(ch) {
   const key = state.font + ch; if (gcache.has(key)) return gcache.get(key);
   const c = document.createElement('canvas'); c.width = c.height = S;
   const x = c.getContext('2d', { willReadFrequently: true });
+  let ready = true; try { ready = document.fonts.check(`400 64px ${fam()}`, ch + '永'); } catch (e) {}
   x.font = `400 ${Math.round(S * 0.86)}px ${fam()}, serif`;
   x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.fillStyle = '#000';
   const m = x.measureText('永');
   x.fillText(ch, S / 2, S / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
-  gcache.set(key, c); return c;
+  if (ready) gcache.set(key, c); else c.fallback = true;
+  return c;
 }
 function inkProfile(c, vertical) {
   const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, S, S).data, p = new Float64Array(S);
@@ -325,7 +329,7 @@ function kept(ch, crop, mode) {
     }
   }
   const c = document.createElement('canvas'); c.width = c.height = S; c.getContext('2d').putImageData(img, 0, 0);
-  const r = { c, mixed }; kcache.set(key, r); return r;
+  const r = { c, mixed }; if (!src.fallback) kcache.set(key, r); return r;
 }
 function applyErase0(x, strokes) { // strokes painted with the current composite operation
   x.save(); x.lineCap = x.lineJoin = 'round'; x.strokeStyle = x.fillStyle = '#000';
@@ -659,7 +663,7 @@ async function doZip() {
 
 // ---------- fonts ----------
 async function ensureFont(text) {
-  try { await document.fonts.load(`400 64px ${fam()}`, text); } catch (e) {}
+  try { await document.fonts.load(`400 64px ${fam()}`, text + '永'); } catch (e) {} // 永 sets the baseline
 }
 async function rerenderAll() {
   gcache.clear(); kcache.clear(); await ensureFont($('inA').value + $('inB').value + state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''));
