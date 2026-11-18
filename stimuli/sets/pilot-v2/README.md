@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 20 | P006-P057, with gaps (see below) |
+| Pseudo-characters | 29 | P006-P080, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -19,9 +19,10 @@ All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker
 - `images/`: one PNG per item, named by `item_id`.
 - `excluded.csv`: pseudo-characters left out, with the reason (`exists_in_unicode` or `team_review`, see below).
 - `merge_team_csvs.py`: the script that merged the team's batch exports into `items.csv`
-  and copied the images. Usage: `python3 merge_team_csvs.py <team folder> <this folder>`,
+  and copied the images. Usage:
+  `python3 merge_team_csvs.py <team folder> <this folder> <second batch folder>`,
   where the team folder has `real words/` and `fake words/` with the exported CSVs and the
-  renamed PNGs.
+  renamed PNGs, and the second batch folder (`pseudo-characters 2`) has one `items.csv` and its PNGs.
 
 ## How the batch exports were matched to the images [Unverified, confidence 85%; the team must confirm]
 
@@ -64,6 +65,25 @@ On 2026-11-18 the team reviewed the remaining 35 and removed 15 more (the script
 `TEAM_REMOVED` list): P003, P004, P010, P017, P018, P022, P023, P026, P029, P040, P041, P042,
 P046, P047, P049. 20 pseudo-characters remain.
 
+## Second batch (2026-11-18)
+
+The team made 15 new pseudo-characters (folder `pseudo-characters 2`). Their file reuses the
+IDs P008-P027, so the script gives them new IDs P066-P080 in file order (`source_item_id`
+keeps the team's ID). They were checked in the same way as above. Six already exist in
+Unicode and were left out (in `excluded.csv`):
+
+| New ID | Team ID | Shape | Existing character |
+| --- | --- | --- | --- |
+| P068 | P011 | ⿰齒真 | 齻 U+9F7B |
+| P071 | P017 | ⿰足刂 | 𧿀 U+27FC0 |
+| P072 | P018 | ⿺辶亥 | 𨒨 U+284A8 |
+| P073 | P019 | ⿺辶占 | 迠 U+8FE0 |
+| P078 | P025 | ⿰言敫 | 譤 U+8B64 |
+| P079 | P026 | ⿰皀攵 | 𢼖 U+22F16 (⿰皀攴) |
+
+The other nine were added: P066, P067, P069, P070, P074, P075, P076, P077, P080.
+29 pseudo-characters remain in total.
+
 ## Review before the pilot [TBD]
 
 Every item must be checked by a person (see the maker's README). Items to look at first,
@@ -72,5 +92,11 @@ found while merging (component readings are from the images and may be wrong):
 - P021 (魄+棵, 白+果) is drawn so that its left part looks like 目, which would make it the
   encoded character 𥇬. Kept because 白+果 is not encoded; the team should decide.
 - P009 (住 over 灬) looks close to 焦.
-- The set has 90 real and 20 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+- P066 (岏+感) looks very close to 咸: it is 咸 with the first stroke drawn straight down.
+  Not found as an encoded character, but readers may take it for 咸.
+- P069 (齣+項, ⿰頁句) is the mirror of the encoded character 䪷 (⿰句頁). It also has a small
+  leftover stroke above 頁.
+- P070 (清+䬤) has a leftover piece at the bottom of 氵, where the left stroke of 尸 was not
+  fully erased.
+- The set has 90 real and 29 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
   uses 60 real and 30 pseudo in its final test].

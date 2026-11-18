@@ -44,3 +44,9 @@ P062,鳴,胖,exists_in_unicode,𠰢,U+20C22,fake words/items_4.csv,P007
 P063,狗,鳴,exists_in_unicode,𤡕,U+24855,fake words/items_4.csv,P008
 P064,轉,胖,exists_in_unicode,𨊸,U+282B8,fake words/items_4.csv,P009
 P065,囗,羊,exists_in_unicode,𪢪,U+2A8AA,fake words/items_4.csv,P010
+P068,齣,瑱,exists_in_unicode,齻,U+9F7B,pseudo-characters 2/items.csv,P011
+P071,劍,足,exists_in_unicode,𧿀,U+27FC0,pseudo-characters 2/items.csv,P017
+P072,亥,這,exists_in_unicode,𨒨,U+284A8,pseudo-characters 2/items.csv,P018
+P073,占,這,exists_in_unicode,迠,U+8FE0,pseudo-characters 2/items.csv,P019
+P078,放,誒,exists_in_unicode,譤,U+8B64,pseudo-characters 2/items.csv,P025
+P079,放,即,exists_in_unicode,𢼖,U+22F16,pseudo-characters 2/items.csv,P026

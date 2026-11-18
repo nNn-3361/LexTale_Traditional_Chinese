@@ -1,5 +1,7 @@
 import csv, shutil, sys, os
 src = sys.argv[1]; out = sys.argv[2]
+# Folder of the second pseudo-character batch ("pseudo-characters 2": one items.csv plus images).
+src2 = sys.argv[3]
 def rows(p): return list(csv.DictReader(open(os.path.join(src, p), encoding='utf-8-sig')))
 real_order2 = '毽鯇氖懿葳玨掂賅蚺綪哏蒿要的是枋輯蒻粵嬡鑫騂酢恬蹔皷萻孖釗閿'
 # final pseudo id -> (file, original id); derived from image modification times and a visual check
@@ -14,6 +16,10 @@ pmap.update({8: ('items_5.csv', 1), 14: ('items_5.csv', 2), 39: ('items_5.csv', 
 pmap.update({15: ('items_6.csv', 2), 27: ('items_6.csv', 3), 31: ('items_6.csv', 1)})
 pmap.update({59: ('items_4.csv', 3), 60: ('items_4.csv', 2), 61: ('items_4.csv', 6), 62: ('items_4.csv', 7), 63: ('items_4.csv', 8), 64: ('items_4.csv', 9), 65: ('items_4.csv', 10)})
 assert sorted(pmap) == list(range(1, 66))
+# Second batch (2026-11-18): 15 new items. The team's file reuses IDs P008-P027, so they get
+# new IDs P066-P080 in file order. IDs are never reused.
+BATCH2 = ['P008', 'P010', 'P011', 'P012', 'P014', 'P017', 'P018', 'P019', 'P020', 'P022',
+          'P023', 'P024', 'P025', 'P026', 'P027']
 assert len(set(pmap.values())) == 65
 # Pseudo-characters left out because the shape already exists as an encoded Unicode character
 # (team decision, 2026-11-18). Found by reading each image's components and looking up the
@@ -24,6 +30,8 @@ EXCLUDED = {
     'P036': '𮟫', 'P037': '𡚧', 'P039': '𬊙', 'P043': '萑', 'P045': '肥', 'P048': '㔀',
     'P051': '𨥋', 'P053': '𭦓', 'P054': '聊', 'P056': '𥭋', 'P058': '𫊺', 'P059': '䦦',
     'P060': '𬇏', 'P061': '迌', 'P062': '𠰢', 'P063': '𤡕', 'P064': '𨊸', 'P065': '𪢪',
+    # second batch
+    'P068': '齻', 'P071': '𧿀', 'P072': '𨒨', 'P073': '迠', 'P078': '譤', 'P079': '𢼖',
 }
 # Pseudo-characters the team removed after reviewing the set (2026-11-18). IDs are not reused.
 TEAM_REMOVED = ['P003', 'P004', 'P010', 'P017', 'P018', 'P022', 'P023', 'P026', 'P029',
@@ -40,6 +48,12 @@ used = set()
 for k in range(1, 66):
     f, o = pmap[k]; r = dict(pf[f][f'P{o:03d}']); used.add((f, o))
     r['source_file'] = 'fake words/' + f; r['source_item_id'] = r['item_id']
+    out_rows.append(r | {'item_id': f'P{k:03d}', 'image': f'P{k:03d}.png'})
+b2 = {r['item_id']: r for r in csv.DictReader(open(os.path.join(src2, 'items.csv'), encoding='utf-8-sig'))}
+assert sorted(b2) == BATCH2
+for k, o in enumerate(BATCH2, 66):
+    r = dict(b2[o]); r['source_file'] = 'pseudo-characters 2/items.csv'; r['source_item_id'] = o
+    r['_img'] = os.path.join(src2, b2[o]['image'])
     out_rows.append(r | {'item_id': f'P{k:03d}', 'image': f'P{k:03d}.png'})
 dropped = [(f, i) for f in pf for i in pf[f] if (f, int(i[1:])) not in used]
 print('dropped rows:', dropped)
@@ -62,5 +76,5 @@ with open(os.path.join(out, 'items.csv'), 'w', encoding='utf-8-sig', newline='')
         r = {c: (r.get(c) or '') for c in cols}; r['review_status'] = 'pending'; w.writerow(r)
 for r in out_rows:
     d = 'real words' if r['item_id'][0] == 'R' else 'fake words'
-    shutil.copyfile(os.path.join(src, d, r['image']), os.path.join(out, 'images', r['image']))
+    shutil.copyfile(r.get('_img') or os.path.join(src, d, r['image']), os.path.join(out, 'images', r['image']))
 print(len(out_rows), 'rows')
