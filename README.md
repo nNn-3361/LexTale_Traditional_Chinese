@@ -70,7 +70,7 @@ The same test exists in three forms, for three purposes. They share the test log
 | Status | Usable now | Merged, waiting for one-time setup | Skeleton; on hold until hosting is discussed with the supervisor |
 | Docs | [`web/README.md`](web/README.md) | [`docs/pilot-hosting.md`](docs/pilot-hosting.md) | [`server/README.md`](server/README.md) |
 
-Beta preview for the team: https://claude.ai/artifact/Yc35CukmP9ognVh69asYXF (a private claude.ai page; ask the project owner for access).
+Beta preview for the team: https://claude.ai/artifact/Tqw1BBmZGANDoy4Kt8ZC3y (a private claude.ai page; ask the project owner for access). It uses the current item set (90 real, 20 pseudo). The earlier preview page, which used the removed draft pool, now only links here.
 
 All three use the F key for "real character" and the J key for "not a real character", or buttons on phones and tablets. Items appear in a new random order in each run, each after a 500 ms fixation cross.
 
