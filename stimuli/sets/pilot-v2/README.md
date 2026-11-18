@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 37 | P006-P091, with gaps (see below) |
+| Pseudo-characters | 24 | P006-P091, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -68,6 +68,10 @@ On 2026-11-18 the team reviewed the remaining 35 and removed 15 more (the script
 `TEAM_REMOVED` list): P003, P004, P010, P017, P018, P022, P023, P026, P029, P040, P041, P042,
 P046, P047, P049. 20 pseudo-characters remain.
 
+On 2026-11-18 a second review removed 13 more: P038, P044, P066, P067, P069, P070, P074, P075,
+P076, P077, P080, P085, P089 (also in `TEAM_REMOVED`). The team also deleted their PNGs from
+the team's source folders; their CSV rows are kept, because the script reads them.
+
 ## Second batch (2026-11-18)
 
 The team made 15 new pseudo-characters (folder `pseudo-characters 2`). Their file reuses the
@@ -101,7 +105,7 @@ P081 (語+湖) looks like 䚴 (⿰言月, U+46B4) but has one extra slanted stro
 team confirmed the stroke is meant, so P081 is kept.
 
 The other eight were added: P081, P083, P084, P085, P088, P089, P090, P091.
-37 pseudo-characters remain in total.
+After the second team review (above), 24 pseudo-characters remain in total.
 
 ## Review before the pilot [TBD]
 
@@ -111,12 +115,5 @@ found while merging (component readings are from the images and may be wrong):
 - P021 (魄+棵, 白+果) is drawn so that its left part looks like 目, which would make it the
   encoded character 𥇬. Kept because 白+果 is not encoded; the team should decide.
 - P009 (住 over 灬) looks close to 焦.
-- P066 (岏+感) looks very close to 咸: it is 咸 with the first stroke drawn straight down.
-  Not found as an encoded character, but readers may take it for 咸.
-- P069 (齣+項, ⿰頁句) is the mirror of the encoded character 䪷 (⿰句頁). It also has a small
-  leftover stroke above 頁.
-- P070 (清+䬤) has a leftover piece at the bottom of 氵, where the left stroke of 尸 was not
-  fully erased.
-- P089 (霧+緾, 雨 over 厘) has two small stray dots to the left of the character.
-- The set has 90 real and 37 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+- The set has 90 real and 24 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
   uses 60 real and 30 pseudo in its final test].

@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-18: Second team review removed 13 pseudo-characters (P038, P044, P066, P067, P069, P070, P074-P077, P080, P085, P089), leaving 90 real and 24 pseudo items. (#25)
 - 2026-11-18: Added the team's third batch of 11 pseudo-characters as P081-P091; three already exist in Unicode and were left out, so the set has 90 real and 37 pseudo items. `items.csv` gains the maker's stroke-thickness columns. (#24)
 - 2026-11-18: Pseudo-character maker: a "calibrate stroke thickness" button gives each part a font weight that offsets its scaling, and a "calibrate size" button fits the whole character to a reference frame (median ink box of real characters); both act only when pressed. The CSV adds weight columns; older items render unchanged. (#22)
 - 2026-11-18: Pseudo-character maker: fixed a bug where glyphs drawn before the web font finished loading were cached in a fallback font, so saved items and their exports could use the wrong font until the font setting was changed. (#21)

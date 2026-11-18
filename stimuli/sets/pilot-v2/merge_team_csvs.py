@@ -42,7 +42,10 @@ EXCLUDED = {
 }
 # Pseudo-characters the team removed after reviewing the set (2026-11-18). IDs are not reused.
 TEAM_REMOVED = ['P003', 'P004', 'P010', 'P017', 'P018', 'P022', 'P023', 'P026', 'P029',
-                'P040', 'P041', 'P042', 'P046', 'P047', 'P049']
+                'P040', 'P041', 'P042', 'P046', 'P047', 'P049',
+                # second team review (2026-11-18)
+                'P038', 'P044', 'P066', 'P067', 'P069', 'P070', 'P074', 'P075', 'P076',
+                'P077', 'P080', 'P085', 'P089']
 cols = ['item_id','lexicality','char','source_a','source_b','structure','cut_a','cut_b','keep_a','keep_b','crop_a','crop_b','move_a','move_b','cut_mode','manual_edit','erase_strokes','layout','place_a','place_b','erase_a','erase_b','weight_a','weight_b','font','image','source_file','source_item_id','review_status']
 out_rows = []
 r1 = rows('real words/items_1.csv'); r2 = {r['char']: r for r in rows('real words/items_2.csv')}
