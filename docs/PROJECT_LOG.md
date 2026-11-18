@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-18: The team now uses one beta preview page, with the current item set; README links to it, and the old preview page only links to the new one. (#19)
 - 2026-11-18: Team review removed 15 more pseudo-characters from `stimuli/sets/pilot-v2/` (listed in `excluded.csv`), leaving 90 real and 20 pseudo items. (#18)
 - 2026-11-18: Team decision: pseudo-characters that already exist as Unicode characters are not used. Removed 30 of the 65 from `stimuli/sets/pilot-v2/` (listed in `excluded.csv`), leaving 90 real and 35 pseudo items; IDs are not reused. (#17)
 - 2026-11-17: Added the team's own pilot item set (90 real characters, 65 pseudo-characters) to `stimuli/sets/pilot-v2/`, merged from the team's batch exports; the beta and pilot pages no longer offer the old "batch 1" choice. Not yet reviewed. (#16)
