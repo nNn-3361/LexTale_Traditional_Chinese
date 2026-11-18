@@ -83,6 +83,8 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .tools input[type=range]{width:90px}
 .tools button[aria-pressed=true]{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
 #cvOut{touch-action:none}
+/* fixed-width slider labels, so "寬 9%" and "寬 100%" take the same room and the slider does not move while dragged */
+#sx-l,#sy-l{display:inline-block;min-width:4.6em;text-align:right;font-variant-numeric:tabular-nums}
 #cvOut.erasing{cursor:crosshair}
 #cvOut.moving{cursor:move}
 .seg.pre button{padding:3px 8px;font-size:.8rem}
@@ -153,7 +155,6 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
           </div>
           <div class="out">
             <canvas id="cvOut" width="520" height="520" tabindex="0" aria-label="組合結果：移動模式下拖曳部件，或用方向鍵微調（Shift 一次 10 格）"></canvas>
-            <div id="cutWarn"></div>
             <div class="seg" role="group" aria-label="編輯模式">
               <button id="mMove" aria-pressed="true">移動部件</button>
               <button id="eraser" aria-pressed="false">橡皮擦</button>
@@ -174,6 +175,8 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
               <button id="undoErase">復原</button>
               <button id="clearErase">清除擦除</button>
             </div>
+            <!-- warnings sit below the controls: they come and go while a slider is dragged, and must not move it -->
+            <div id="cutWarn"></div>
             <button class="primary" id="addPseudo">加入清單（假字）</button>
           </div>
         </div>
