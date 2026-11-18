@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 36 | P006-P091, with gaps (see below) |
+| Pseudo-characters | 37 | P006-P091, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -89,20 +89,19 @@ The other nine were added: P066, P067, P069, P070, P074, P075, P076, P077, P080.
 ## Third batch (2026-11-18)
 
 The team made 11 more (folder `pseudo-characters 3`, team IDs P001-P016 with gaps). They get
-new IDs P081-P091 in file order. Four already exist in Unicode and were left out:
+new IDs P081-P091 in file order. Three already exist in Unicode and were left out:
 
 | New ID | Team ID | Shape | Existing character |
 | --- | --- | --- | --- |
-| P081 | P001 | ⿰言月 | 䚴 U+46B4 |
 | P082 | P002 | ⿰阝力 | 阞 U+961E |
 | P086 | P008 | ⿸耂占 | 𦒻 U+264BB |
 | P087 | P009 | ⿰金屋 | 𫒷 U+2B4B7 |
 
-P081 has one extra slanted stroke inside 月. It was read as a leftover from 胡 and so as 䚴; if
-the stroke is meant, the item can be added back [Unverified, confidence 70%; the team must confirm].
+P081 (語+湖) looks like 䚴 (⿰言月, U+46B4) but has one extra slanted stroke inside 月. The
+team confirmed the stroke is meant, so P081 is kept.
 
-The other seven were added: P083, P084, P085, P088, P089, P090, P091.
-36 pseudo-characters remain in total.
+The other eight were added: P081, P083, P084, P085, P088, P089, P090, P091.
+37 pseudo-characters remain in total.
 
 ## Review before the pilot [TBD]
 
@@ -119,5 +118,5 @@ found while merging (component readings are from the images and may be wrong):
 - P070 (清+䬤) has a leftover piece at the bottom of 氵, where the left stroke of 尸 was not
   fully erased.
 - P089 (霧+緾, 雨 over 厘) has two small stray dots to the left of the character.
-- The set has 90 real and 36 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+- The set has 90 real and 37 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
   uses 60 real and 30 pseudo in its final test].

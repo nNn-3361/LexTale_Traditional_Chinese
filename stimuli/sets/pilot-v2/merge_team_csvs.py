@@ -38,7 +38,7 @@ EXCLUDED = {
     # second batch
     'P068': '齻', 'P071': '𧿀', 'P072': '𨒨', 'P073': '迠', 'P078': '譤', 'P079': '𢼖',
     # third batch
-    'P081': '䚴', 'P082': '阞', 'P086': '𦒻', 'P087': '𫒷',
+    'P082': '阞', 'P086': '𦒻', 'P087': '𫒷',
 }
 # Pseudo-characters the team removed after reviewing the set (2026-11-18). IDs are not reused.
 TEAM_REMOVED = ['P003', 'P004', 'P010', 'P017', 'P018', 'P022', 'P023', 'P026', 'P029',
