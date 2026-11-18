@@ -1,8 +1,7 @@
 import csv, shutil, sys, os
 src = sys.argv[1]; out = sys.argv[2]
-# Folders of the later pseudo-character batches ("pseudo-characters 2", "pseudo-characters 3":
-# each one items.csv plus images), in order.
-later_dirs = sys.argv[3:]
+# Folder of the second pseudo-character batch ("pseudo-characters 2": one items.csv plus images).
+src2 = sys.argv[3]
 def rows(p): return list(csv.DictReader(open(os.path.join(src, p), encoding='utf-8-sig')))
 real_order2 = '毽鯇氖懿葳玨掂賅蚺綪哏蒿要的是枋輯蒻粵嬡鑫騂酢恬蹔皷萻孖釗閿'
 # final pseudo id -> (file, original id); derived from image modification times and a visual check
@@ -21,10 +20,6 @@ assert sorted(pmap) == list(range(1, 66))
 # new IDs P066-P080 in file order. IDs are never reused.
 BATCH2 = ['P008', 'P010', 'P011', 'P012', 'P014', 'P017', 'P018', 'P019', 'P020', 'P022',
           'P023', 'P024', 'P025', 'P026', 'P027']
-# Third batch (2026-11-18): 11 new items, team IDs P001-P016 with gaps; new IDs P081-P091.
-BATCH3 = ['P001', 'P002', 'P003', 'P004', 'P006', 'P008', 'P009', 'P010', 'P011', 'P014', 'P016']
-LATER = [('pseudo-characters 2', BATCH2, 66), ('pseudo-characters 3', BATCH3, 81)]
-assert len(later_dirs) == len(LATER)
 assert len(set(pmap.values())) == 65
 # Pseudo-characters left out because the shape already exists as an encoded Unicode character
 # (team decision, 2026-11-18). Found by reading each image's components and looking up the
@@ -37,13 +32,11 @@ EXCLUDED = {
     'P060': '𬇏', 'P061': '迌', 'P062': '𠰢', 'P063': '𤡕', 'P064': '𨊸', 'P065': '𪢪',
     # second batch
     'P068': '齻', 'P071': '𧿀', 'P072': '𨒨', 'P073': '迠', 'P078': '譤', 'P079': '𢼖',
-    # third batch
-    'P081': '䚴', 'P082': '阞', 'P086': '𦒻', 'P087': '𫒷',
 }
 # Pseudo-characters the team removed after reviewing the set (2026-11-18). IDs are not reused.
 TEAM_REMOVED = ['P003', 'P004', 'P010', 'P017', 'P018', 'P022', 'P023', 'P026', 'P029',
                 'P040', 'P041', 'P042', 'P046', 'P047', 'P049']
-cols = ['item_id','lexicality','char','source_a','source_b','structure','cut_a','cut_b','keep_a','keep_b','crop_a','crop_b','move_a','move_b','cut_mode','manual_edit','erase_strokes','layout','place_a','place_b','erase_a','erase_b','weight_a','weight_b','font','image','source_file','source_item_id','review_status']
+cols = ['item_id','lexicality','char','source_a','source_b','structure','cut_a','cut_b','keep_a','keep_b','crop_a','crop_b','move_a','move_b','cut_mode','manual_edit','erase_strokes','layout','place_a','place_b','erase_a','erase_b','font','image','source_file','source_item_id','review_status']
 out_rows = []
 r1 = rows('real words/items_1.csv'); r2 = {r['char']: r for r in rows('real words/items_2.csv')}
 assert sorted(r2) == sorted(real_order2)
@@ -56,13 +49,12 @@ for k in range(1, 66):
     f, o = pmap[k]; r = dict(pf[f][f'P{o:03d}']); used.add((f, o))
     r['source_file'] = 'fake words/' + f; r['source_item_id'] = r['item_id']
     out_rows.append(r | {'item_id': f'P{k:03d}', 'image': f'P{k:03d}.png'})
-for d, (name, ids, first) in zip(later_dirs, LATER):
-    b = {r['item_id']: r for r in csv.DictReader(open(os.path.join(d, 'items.csv'), encoding='utf-8-sig'))}
-    assert sorted(b) == ids
-    for k, o in enumerate(ids, first):
-        r = dict(b[o]); r['source_file'] = name + '/items.csv'; r['source_item_id'] = o
-        r['_img'] = os.path.join(d, b[o]['image'])
-        out_rows.append(r | {'item_id': f'P{k:03d}', 'image': f'P{k:03d}.png'})
+b2 = {r['item_id']: r for r in csv.DictReader(open(os.path.join(src2, 'items.csv'), encoding='utf-8-sig'))}
+assert sorted(b2) == BATCH2
+for k, o in enumerate(BATCH2, 66):
+    r = dict(b2[o]); r['source_file'] = 'pseudo-characters 2/items.csv'; r['source_item_id'] = o
+    r['_img'] = os.path.join(src2, b2[o]['image'])
+    out_rows.append(r | {'item_id': f'P{k:03d}', 'image': f'P{k:03d}.png'})
 dropped = [(f, i) for f in pf for i in pf[f] if (f, int(i[1:])) not in used]
 print('dropped rows:', dropped)
 gone = set(EXCLUDED) | set(TEAM_REMOVED)
