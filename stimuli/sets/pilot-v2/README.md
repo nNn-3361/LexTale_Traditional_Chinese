@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 35 | P003-P057, with gaps (see below) |
+| Pseudo-characters | 20 | P006-P057, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -17,7 +17,7 @@ All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker
     (the team exported several batches, and each batch restarts its IDs at 001).
   - `review_status`: `pending` for every item.
 - `images/`: one PNG per item, named by `item_id`.
-- `excluded.csv`: pseudo-characters left out because they already exist in Unicode (see below).
+- `excluded.csv`: pseudo-characters left out, with the reason (`exists_in_unicode` or `team_review`, see below).
 - `merge_team_csvs.py`: the script that merged the team's batch exports into `items.csv`
   and copied the images. Usage: `python3 merge_team_csvs.py <team folder> <this folder>`,
   where the team folder has `real words/` and `fake words/` with the exported CSVs and the
@@ -56,7 +56,13 @@ with the existing character and its code point. Limits [Unverified, confidence 8
 - A misread component gives a wrong result either way.
 - cjkvi-ids only covers encoded characters. A shape can also be a variant listed in the MOE
   Dictionary of Chinese Character Variants (https://dict.variants.moe.edu.tw/) without being
-  encoded, so the remaining 35 still need the manual check below.
+  encoded, so the remaining items still need the manual check below.
+
+## Removed after team review
+
+On 2026-11-18 the team reviewed the remaining 35 and removed 15 more (the script's
+`TEAM_REMOVED` list): P003, P004, P010, P017, P018, P022, P023, P026, P029, P040, P041, P042,
+P046, P047, P049. 20 pseudo-characters remain.
 
 ## Review before the pilot [TBD]
 
@@ -66,5 +72,5 @@ found while merging (component readings are from the images and may be wrong):
 - P021 (魄+棵, 白+果) is drawn so that its left part looks like 目, which would make it the
   encoded character 𥇬. Kept because 白+果 is not encoded; the team should decide.
 - P009 (住 over 灬) looks close to 焦.
-- The set has 90 real and 35 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+- The set has 90 real and 20 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
   uses 60 real and 30 pseudo in its final test].

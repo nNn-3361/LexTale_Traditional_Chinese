@@ -2,7 +2,7 @@
 
 A short, character-based lexical decision test for Traditional Chinese, developed by a research team at National Taipei University of Technology (Taipei Tech). Test takers see one character at a time and decide whether it is a real character or not. The goal is a test of a few minutes that gives Chinese language teachers and researchers a quick estimate of a person's Chinese proficiency.
 
-> **Status (2026-11-17): development, before the pilot.** The team's own item set (90 real, 35 pseudo) has been added and is waiting for review. No participant data has been collected. The final test, its scoring, and its validity are not settled.
+> **Status (2026-11-17): development, before the pilot.** The team's own item set (90 real, 20 pseudo) has been added and is waiting for review. No participant data has been collected. The final test, its scoring, and its validity are not settled.
 
 ---
 
@@ -48,7 +48,7 @@ Made by the team between 2026-11-06 and 2026-11-11:
 | Area | State |
 | --- | --- |
 | Pseudo-character maker tool | Done (`stimuli/tools/pseudo-character-maker/`). |
-| Pilot item pool | Team-made set in `stimuli/sets/pilot-v2/` (90 real, 35 pseudo); manual review not finished. |
+| Pilot item pool | Team-made set in `stimuli/sets/pilot-v2/` (90 real, 20 pseudo); manual review not finished. |
 | Beta page for the team | Done and online as a private preview (see below). |
 | Pilot page (no server) | Code merged. Not live yet: the Google Sheet and the `PILOT_RESULTS_URL` repository variable still need to be set up (the first workflow run on 2026-11-11 was skipped for this reason). |
 | Full system (FastAPI + MySQL) | Skeleton done. Not deployed; no server. |
@@ -83,7 +83,7 @@ The team made its own set of real and pseudo-characters with the pseudo-characte
 | Type | Items |
 | --- | --- |
 | Real characters | 90 |
-| Pseudo-characters | 35 (30 of the original 65 were removed because they already exist in Unicode) |
+| Pseudo-characters | 20 (of the original 65, 30 were removed because they already exist in Unicode and 15 after team review) |
 
 How the real characters were chosen, and which pseudo-characters use legal or illegal component positions, will be described here [TBD]. Every item is marked `review_status = pending`. The items to check first are listed in [`stimuli/sets/pilot-v2/README.md`](stimuli/sets/pilot-v2/README.md).
 
