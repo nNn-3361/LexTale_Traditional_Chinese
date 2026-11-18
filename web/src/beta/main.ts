@@ -17,6 +17,7 @@ import { runTest } from "./run-test";
 import type { RunScore } from "./scoring";
 import * as store from "./store";
 import "./beta.css";
+import "./ink.css";
 
 const app = document.getElementById("app")!;
 const stage = document.getElementById("stage")!;
@@ -60,7 +61,7 @@ function header(sub: string) {
     <header class="top">
       <div>
         <p class="eyebrow">LexTALE 繁體中文 · Beta</p>
-        <h1>${sub}</h1>
+        <h1>${sub}<span class="seal" aria-hidden="true">字</span></h1>
       </div>
       <nav class="tabs">
         <a href="#" class="${location.hash === "#analysis" ? "" : "on"}">施測 Test</a>

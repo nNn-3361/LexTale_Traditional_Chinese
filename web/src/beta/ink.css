@@ -1,0 +1,118 @@
+/* Beta page theme: minimal Chinese ink-wash style.
+   Loaded only by the beta page (main.ts), after beta.css; the pilot page keeps
+   the plain style. It only changes colours, fonts and decoration: layout, test
+   logic and the stimulus card are unchanged. The stimulus images stay on a
+   plain white card with no texture behind them.
+   Fonts: LXGW WenKai TC (brush-style kaishu, SIL OFL 1.1) for headings and
+   Noto Serif TC (SIL OFL 1.1) for text, both linked from Google Fonts in
+   beta.html. Paper texture and mountains are drawn with CSS and inline SVG. */
+:root {
+  --bg: #f3efe4;
+  --surface: #faf8f1;
+  --fg: #2b2925;
+  --muted: #6f6a60;
+  --line: #d6cfbf;
+  --accent: #3d3a35;
+  --accent-fg: #faf8f1;
+  --accent-soft: #e8e2d3;
+  --stim-bg: #ffffff;
+  --seal: #a8322b;
+  --seal-fg: #fbf3ec;
+  --good: #3f6b4a;
+  --good-soft: #e1e8dc;
+  --warn: #8a6420;
+  --warn-soft: #f1e6cf;
+  --bad: #a8322b;
+  --bad-soft: #f3dcd6;
+  --none-soft: #ebe6da;
+  --ink-hill: #2b2925;
+  --font-ui: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-brush: "LXGW WenKai TC", "Kaiti TC", "BiauKai", "DFKai-SB", "Noto Serif TC", serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1b1a17; --surface: #23221e; --fg: #e9e4d8; --muted: #a59f92; --line: #3a3832;
+    --accent: #e3ddcf; --accent-fg: #1b1a17; --accent-soft: #34322c; --stim-bg: #ffffff;
+    --seal: #c4473d; --seal-fg: #fbf3ec;
+    --good: #8fbf98; --good-soft: #22302a; --warn: #d9b06a; --warn-soft: #3a3020;
+    --bad: #e08a7f; --bad-soft: #3c2522; --none-soft: #2c2a25; --ink-hill: #e9e4d8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1b1a17; --surface: #23221e; --fg: #e9e4d8; --muted: #a59f92; --line: #3a3832;
+  --accent: #e3ddcf; --accent-fg: #1b1a17; --accent-soft: #34322c; --stim-bg: #ffffff;
+  --seal: #c4473d; --seal-fg: #fbf3ec;
+  --good: #8fbf98; --good-soft: #22302a; --warn: #d9b06a; --warn-soft: #3a3020;
+  --bad: #e08a7f; --bad-soft: #3c2522; --none-soft: #2c2a25; --ink-hill: #e9e4d8;
+  color-scheme: dark;
+}
+
+/* Rice-paper ground: a faint fibre texture (SVG noise) over the paper colour. */
+body {
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9 0.35' numOctaves='3' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0.45 0 0 0 0 0.4 0 0 0 0 0.3 0 0 0 0.07 0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23f)'/%3E%3C/svg%3E");
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+
+/* Distant ink-wash hills along the bottom of the page (not on the test stage). */
+#app { position: relative; isolation: isolate; padding-bottom: 160px; }
+#app::after {
+  content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 190px; z-index: -1; pointer-events: none;
+  background-color: var(--ink-hill); opacity: 0.09;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 190' preserveAspectRatio='none'%3E%3Cpath fill-opacity='0.45' d='M0 120 C80 95 150 60 230 78 C300 92 330 40 410 52 C490 64 520 110 600 100 C690 88 720 30 820 44 C900 56 940 98 1020 92 C1100 86 1150 66 1200 72 L1200 190 L0 190Z'/%3E%3Cpath d='M0 160 C120 140 190 112 280 126 C360 138 420 100 500 112 C600 128 650 150 760 138 C860 126 900 104 990 118 C1080 132 1140 146 1200 140 L1200 190 L0 190Z'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 190' preserveAspectRatio='none'%3E%3Cpath fill-opacity='0.45' d='M0 120 C80 95 150 60 230 78 C300 92 330 40 410 52 C490 64 520 110 600 100 C690 88 720 30 820 44 C900 56 940 98 1020 92 C1100 86 1150 66 1200 72 L1200 190 L0 190Z'/%3E%3Cpath d='M0 160 C120 140 190 112 280 126 C360 138 420 100 500 112 C600 128 650 150 760 138 C860 126 900 104 990 118 C1080 132 1140 146 1200 140 L1200 190 L0 190Z'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
+}
+
+/* Header: brush-script title, red seal, thin double rule. */
+.top { border-bottom: 1px solid var(--line); box-shadow: 0 3px 0 -2px var(--line); padding-bottom: 18px; margin-bottom: 32px; }
+.eyebrow { font-family: var(--font-ui); letter-spacing: 0.3em; text-transform: none; }
+h1, h2, legend, .tile .tl { font-family: var(--font-brush); font-weight: 400; }
+h1 { font-size: 2.1rem; letter-spacing: 0.08em; line-height: 1.35; }
+@media (max-width: 480px) { h1 { font-size: 1.7rem; } }
+h2 { font-size: 1.25rem; letter-spacing: 0.04em; }
+.seal {
+  display: inline-grid; place-items: center; width: 1.5em; height: 1.5em; vertical-align: 0.35em; margin-left: 0.5em;
+  font-family: var(--font-brush); font-size: 0.55em; line-height: 1; letter-spacing: 0;
+  color: var(--seal-fg); background: var(--seal); border-radius: 3px;
+  box-shadow: inset 0 0 0 2px var(--seal), inset 0 0 0 3px var(--seal-fg);
+  transform: rotate(-4deg);
+}
+
+/* Tabs: plain text with an ink underline. */
+.tabs { background: none; padding: 0; gap: 18px; border-radius: 0; }
+.tabs a { padding: 4px 2px; border-radius: 0; border-bottom: 2px solid transparent; font-family: var(--font-brush); font-size: 1.05rem; font-weight: 400; }
+.tabs a.on { background: none; box-shadow: none; border-bottom-color: var(--seal); color: var(--fg); }
+
+/* Panels and tiles: paper cards with a thin rule, no heavy shadows. */
+.panel, .tile, details.formulas, details.runs, .table-wrap, .empty { background: var(--surface); border-color: var(--line); border-radius: 2px; }
+.panel { position: relative; padding: 28px; }
+.panel::before { content: ""; position: absolute; inset: 6px; border: 1px dashed var(--line); pointer-events: none; }
+.note { border-left: 1px solid var(--line); padding-left: 24px; }
+@media (max-width: 760px) { .note { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 20px; } }
+.tile.main { background: var(--accent-soft); border-color: var(--accent); }
+.tv { font-family: var(--font-ui); font-weight: 600; }
+th { background: var(--surface); }
+
+/* Buttons: ink block for the main action, thin outline for the rest. */
+.btn { border-radius: 2px; font-weight: 500; letter-spacing: 0.04em; }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn.primary:hover:not([disabled]) { background: var(--seal); border-color: var(--seal); color: var(--seal-fg); }
+.btn.danger { background: var(--seal); border-color: var(--seal); color: var(--seal-fg); }
+#start-form .btn.primary { padding: 10px 28px; font-family: var(--font-brush); font-size: 1.1rem; }
+input[type="text"], input:not([type]), select { border-radius: 2px; background: var(--surface); }
+input:focus-visible, select:focus-visible, .btn:focus-visible, a:focus-visible { outline-color: var(--seal); }
+.radio input, .check input { accent-color: var(--fg); }
+.chip, .pill { border-radius: 2px; }
+
+/* Test stage: plain paper, no texture or hills; the stimulus stays on its white card. */
+#stage { background: var(--bg); }
+#stage h1, #stage h2 { font-family: var(--font-brush); font-weight: 400; }
+#stage .jspsych-btn { border-radius: 2px; font-family: var(--font-ui); }
+#stage .jspsych-btn:hover { border-color: var(--seal); background: var(--accent-soft); }
+#stage #jspsych-progressbar-inner { background-color: var(--seal); }
+.ld-img { border-radius: 2px; box-shadow: 0 0 0 1px var(--line); }
+.fixation { font-family: var(--font-ui); color: var(--muted); }
+#stage .jspsych-display-element, #stage .jspsych-content { font-family: var(--font-ui); }
+#stage #jspsych-progressbar-container { font-family: var(--font-ui); }

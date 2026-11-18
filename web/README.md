@@ -56,6 +56,12 @@ npm run beta:build   # writes dist-beta/, a static site (open it from any web se
 and its images and writes them to `web/.beta-bank/` (generated, not committed).
 To use another set: `node scripts/prepare-beta-bank.mjs path/to/set`.
 
+Look: the beta page uses a minimal Chinese ink-wash style (`src/beta/ink.css`, loaded only by
+`beta.html`): rice-paper colours, brush-style headings in LXGW WenKai TC, text in Noto Serif TC
+(both SIL Open Font License 1.1, loaded from Google Fonts, so the page falls back to system fonts
+offline), a small red seal and faint ink hills drawn in CSS. The test screen stays plain, and the
+character images stay on a white card. The pilot page keeps the plain style.
+
 Flow:
 
 1. Choose the items: all items in the set, or a quick 20 (10 real, 10 pseudo).
