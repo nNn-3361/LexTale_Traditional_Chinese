@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <!-- Pavilion with two eaves. Used as a CSS mask: only the alpha (fill-opacity) matters. -->
+  <g fill="#000">
+    <!-- ridge -->
+    <path d="M232 64 h136 v8 h-136z" fill-opacity="0.9"/>
+    <path d="M226 60 q-6 -14 6 -18 q-2 10 6 18z M374 60 q6 -14 -6 -18 q2 10 -6 18z" fill-opacity="0.9"/>
+    <!-- upper roof -->
+    <path d="M30 136 Q110 150 200 118 L232 72 h136 L400 118 Q490 150 570 136 Q552 156 506 166 L94 166 Q48 156 30 136Z" fill-opacity="0.55"/>
+    <path d="M30 136 Q110 150 200 118 L210 104 Q150 140 30 136Z M570 136 Q490 150 400 118 L390 104 Q450 140 570 136Z" fill-opacity="0.35"/>
+    <path d="M94 166 h412 v6 h-412z" fill-opacity="0.85"/>
+    <!-- upper hall with lattice -->
+    <path d="M160 172 h280 v44 h-280z" fill-opacity="0.18"/>
+    <path d="M160 172 h280 v3 h-280z M160 213 h280 v3 h-280z M196 172 v44 h3 v-44z M244 172 v44 h3 v-44z M296 172 v44 h3 v-44z M352 172 v44 h3 v-44z M400 172 v44 h3 v-44z" fill-opacity="0.6"/>
+    <!-- lower roof -->
+    <path d="M0 236 Q86 248 168 216 h264 Q514 248 600 236 Q580 258 536 266 L64 266 Q20 258 0 236Z" fill-opacity="0.5"/>
+    <path d="M64 266 h472 v6 h-472z" fill-opacity="0.85"/>
+    <!-- pillars -->
+    <path d="M104 272 h10 v92 h-10z M178 272 h10 v92 h-10z M412 272 h10 v92 h-10z M486 272 h10 v92 h-10z" fill-opacity="0.7"/>
+    <!-- railing -->
+    <path d="M70 326 h460 v4 h-460z M70 346 h460 v3 h-460z" fill-opacity="0.6"/>
+    <path d="M90 330 h3 v16 h-3z M140 330 h3 v16 h-3z M150 330 h3 v16 h-3z M220 330 h3 v16 h-3z M260 330 h3 v16 h-3z M340 330 h3 v16 h-3z M380 330 h3 v16 h-3z M450 330 h3 v16 h-3z M460 330 h3 v16 h-3z M510 330 h3 v16 h-3z" fill-opacity="0.5"/>
+    <!-- platform and steps -->
+    <path d="M44 364 h512 v14 h-512z" fill-opacity="0.55"/>
+    <path d="M250 378 h100 v8 h-100z M240 386 h120 v8 h-120z" fill-opacity="0.4"/>
+    <path d="M0 394 h600 v6 h-600z" fill-opacity="0.15"/>
+  </g>
+</svg>

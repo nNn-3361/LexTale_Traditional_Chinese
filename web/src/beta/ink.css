@@ -1,0 +1,201 @@
+/* Beta page theme: off-white paper, pale yellow ink-wash architecture, light grey
+   Song-style type.
+   Loaded only by the beta page (main.ts), after beta.css; the pilot page keeps
+   the plain style. It changes colours, fonts, decoration and small animations;
+   layout, test logic and timing are unchanged. On the test screen there is no
+   texture, architecture or animation behind the stimulus, which stays on a
+   plain white card.
+   Fonts (both SIL OFL 1.1, linked from Google Fonts in beta.html):
+   Chiron Sung HK, a Song typeface with brush-like stroke ends, for headings;
+   Noto Serif TC for text. The architecture is drawn in art/*.svg (used as
+   masks, so its colour comes from --arch). */
+:root {
+  --bg: #f7f3ea;
+  --surface: #fbf9f4;
+  --fg: #3a3732;
+  --head: #7a746a;
+  --muted: #847d72;
+  --line: #e0d8c6;
+  --accent: #5b564d;
+  --accent-fg: #fbf9f4;
+  --accent-soft: #efe9db;
+  --stim-bg: #ffffff;
+  --arch: #c8a660;
+  --arch-alpha: 0.42;
+  --mist: rgb(222 200 150 / 0.18);
+  --seal: #a8322b;
+  --seal-fg: #fbf3ec;
+  --ink: rgb(58 55 50 / 0.16);
+  --good: #4b7454;
+  --good-soft: #e3eadc;
+  --warn: #8a6420;
+  --warn-soft: #f3e9d2;
+  --bad: #a8322b;
+  --bad-soft: #f4e0da;
+  --none-soft: #eee8da;
+  --font-ui: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --font-head: "Chiron Sung HK", "Noto Serif TC", "Songti TC", "PMingLiU", serif;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1c1b18; --surface: #24231f; --fg: #e6e1d5; --head: #b3ac9f; --muted: #a39d90; --line: #3a3832;
+    --accent: #ddd6c6; --accent-fg: #1c1b18; --accent-soft: #33312b; --stim-bg: #ffffff;
+    --arch: #b39557; --arch-alpha: 0.28; --mist: rgb(179 149 87 / 0.08);
+    --seal: #c4473d; --seal-fg: #fbf3ec; --ink: rgb(230 225 213 / 0.14);
+    --good: #8fbf98; --good-soft: #22302a; --warn: #d9b06a; --warn-soft: #3a3020;
+    --bad: #e08a7f; --bad-soft: #3c2522; --none-soft: #2c2a25;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1c1b18; --surface: #24231f; --fg: #e6e1d5; --head: #b3ac9f; --muted: #a39d90; --line: #3a3832;
+  --accent: #ddd6c6; --accent-fg: #1c1b18; --accent-soft: #33312b; --stim-bg: #ffffff;
+  --arch: #b39557; --arch-alpha: 0.28; --mist: rgb(179 149 87 / 0.08);
+  --seal: #c4473d; --seal-fg: #fbf3ec; --ink: rgb(230 225 213 / 0.14);
+  --good: #8fbf98; --good-soft: #22302a; --warn: #d9b06a; --warn-soft: #3a3020;
+  --bad: #e08a7f; --bad-soft: #3c2522; --none-soft: #2c2a25;
+  color-scheme: dark;
+}
+
+/* Paper: off-white with a fibre texture (SVG noise) and a faint laid-line grain. */
+body {
+  background-color: var(--bg);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85 0.3' numOctaves='3' seed='11'/%3E%3CfeColorMatrix values='0 0 0 0 0.5 0 0 0 0 0.43 0 0 0 0 0.3 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23f)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(90deg, transparent 0 5px, rgb(150 130 90 / 0.025) 5px 6px);
+  font-size: 15.5px;
+  line-height: 1.75;
+}
+
+/* Architecture: a roof eave in the top corner and a pavilion at the bottom right,
+   in pale yellow wash, with slowly drifting mist. Only behind #app pages. */
+#app { position: relative; isolation: isolate; padding-top: 104px; padding-bottom: 220px; }
+#app::before, #app::after {
+  content: ""; position: fixed; z-index: -1; pointer-events: none;
+  background-color: var(--arch); opacity: var(--arch-alpha);
+}
+#app::before {
+  top: 0; left: 0; width: min(54vw, 600px); aspect-ratio: 800 / 170;
+  -webkit-mask: url("./art/eave.svg") left top / 100% 100% no-repeat;
+          mask: url("./art/eave.svg") left top / 100% 100% no-repeat;
+  animation: arch-in 1.6s var(--ease) both;
+}
+#app::after {
+  right: max(2vw, 12px); bottom: 0; width: min(46vw, 460px); aspect-ratio: 600 / 400;
+  -webkit-mask: url("./art/pavilion.svg") right bottom / 100% 100% no-repeat;
+          mask: url("./art/pavilion.svg") right bottom / 100% 100% no-repeat;
+  animation: arch-in 1.8s 0.15s var(--ease) both;
+}
+html::after {
+  content: ""; position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background:
+    radial-gradient(40% 18% at 20% 78%, var(--mist), transparent 70%),
+    radial-gradient(35% 14% at 75% 88%, var(--mist), transparent 70%),
+    radial-gradient(30% 12% at 60% 30%, var(--mist), transparent 70%);
+  background-size: 200% 100%;
+  animation: mist 60s linear infinite alternate;
+}
+body:has(#stage:not([hidden])) #app::before, body:has(#stage:not([hidden])) #app::after { display: none; }
+@keyframes arch-in { from { opacity: 0; transform: translateY(12px); } to { opacity: var(--arch-alpha); transform: none; } }
+@keyframes mist { from { background-position: 0% 0; } to { background-position: 100% 0; } }
+
+/* Type: light grey Song headings with brush-like ends. */
+h1, h2, legend, .tile .tl, .tabs a { font-family: var(--font-head); color: var(--head); }
+h1 { font-size: 2.2rem; font-weight: 400; letter-spacing: 0.12em; line-height: 1.35; text-shadow: 0 0 0.6px var(--head); }
+@media (max-width: 480px) { h1 { font-size: 1.75rem; } }
+h2 { font-size: 1.2rem; font-weight: 500; letter-spacing: 0.08em; }
+legend, .field > span { font-weight: 500; }
+.eyebrow { font-family: var(--font-ui); letter-spacing: 0.32em; text-transform: none; color: var(--muted); }
+
+/* Header: thin double rule, red seal stamped in on load. */
+.top { border-bottom: 1px solid var(--line); box-shadow: 0 3px 0 -2px var(--line); padding-bottom: 18px; margin-bottom: 32px; }
+.seal {
+  display: inline-grid; place-items: center; width: 1.45em; height: 1.45em; vertical-align: 0.4em; margin-left: 0.55em;
+  font-family: var(--font-head); font-weight: 700; font-size: 0.55em; line-height: 1; letter-spacing: 0;
+  color: var(--seal-fg); background: var(--seal); border-radius: 3px;
+  box-shadow: inset 0 0 0 2px var(--seal), inset 0 0 0 3px var(--seal-fg);
+  transform: rotate(-4deg); animation: stamp 0.7s 0.5s var(--ease) both;
+}
+@keyframes stamp { 0% { opacity: 0; transform: rotate(-4deg) scale(1.8); } 60% { opacity: 1; transform: rotate(-4deg) scale(0.92); } 100% { opacity: 1; transform: rotate(-4deg) scale(1); } }
+
+/* Tabs: an ink stroke grows under the hovered or current tab. */
+.tabs { background: none; padding: 0; gap: 20px; border-radius: 0; }
+.tabs a { position: relative; padding: 4px 2px; border-radius: 0; font-size: 1.05rem; font-weight: 400; color: var(--muted); transition: color 0.3s var(--ease); }
+.tabs a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--seal) 12%, var(--seal) 80%, transparent);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.45s var(--ease);
+}
+.tabs a:hover { color: var(--fg); }
+.tabs a:hover::after, .tabs a.on::after { transform: scaleX(1); }
+.tabs a.on { background: none; box-shadow: none; color: var(--fg); }
+
+/* Page content rises in, one block after another, each time a page is shown. */
+#app > header, #app > main > *, .grid-start > * > *, main.stack > * { animation: rise 0.6s var(--ease) both; }
+.grid-start > *:nth-child(2) > * { animation-delay: 0.12s; }
+main.stack > *:nth-child(2), .grid-start > * > *:nth-child(2) { animation-delay: 0.08s; }
+main.stack > *:nth-child(3), .grid-start > * > *:nth-child(3) { animation-delay: 0.16s; }
+main.stack > *:nth-child(n+4), .grid-start > * > *:nth-child(n+4) { animation-delay: 0.24s; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Panels: paper cards; the inner frame darkens a little on hover. */
+.panel, .tile, details.formulas, details.runs, .table-wrap, .empty { background: var(--surface); border-color: var(--line); border-radius: 2px; }
+.panel { position: relative; padding: 28px; box-shadow: 0 1px 0 var(--line), 0 12px 30px -24px rgb(90 70 30 / 0.35); transition: box-shadow 0.4s var(--ease); }
+.panel::before { content: ""; position: absolute; inset: 6px; border: 1px dashed var(--line); pointer-events: none; transition: border-color 0.4s var(--ease); }
+.panel:hover { box-shadow: 0 1px 0 var(--line), 0 18px 36px -24px rgb(90 70 30 / 0.45); }
+.panel:hover::before { border-color: var(--arch); }
+.note { border-left: 1px solid var(--line); padding-left: 24px; }
+@media (max-width: 760px) { .note { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 20px; } }
+.tile { transition: transform 0.3s var(--ease), border-color 0.3s var(--ease); }
+.tile:hover { transform: translateY(-2px); border-color: var(--arch); }
+.tile.main { background: var(--accent-soft); border-color: var(--accent); }
+.tv { font-family: var(--font-ui); font-weight: 600; }
+th { background: var(--surface); }
+table.items tbody tr { transition: background-color 0.2s; }
+table.items tbody tr:hover td { background: var(--accent-soft); }
+details summary { transition: color 0.2s; }
+details summary:hover { color: var(--seal); }
+
+/* Buttons: ink-spread ripple on press (ink-fx.ts), ink block for the main action. */
+.btn { position: relative; overflow: hidden; border-radius: 2px; font-weight: 500; letter-spacing: 0.06em; transition: background-color 0.3s var(--ease), border-color 0.3s var(--ease), color 0.3s var(--ease), transform 0.15s; }
+.btn:active:not([disabled]) { transform: translateY(1px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.btn.primary:hover:not([disabled]) { background: var(--seal); border-color: var(--seal); color: var(--seal-fg); }
+.btn.danger { background: var(--seal); border-color: var(--seal); color: var(--seal-fg); }
+#start-form .btn.primary { padding: 10px 30px; font-family: var(--font-head); font-size: 1.12rem; letter-spacing: 0.14em; }
+.ink-drop {
+  position: absolute; border-radius: 50%; pointer-events: none; background: var(--ink);
+  transform: translate(-50%, -50%) scale(0); animation: ink-drop 0.7s var(--ease) forwards;
+  filter: blur(1px);
+}
+.btn.primary .ink-drop, .btn.danger .ink-drop { background: rgb(255 255 255 / 0.25); }
+@keyframes ink-drop { to { transform: translate(-50%, -50%) scale(1); opacity: 0; } }
+
+/* Form controls. */
+input[type="text"], input:not([type]), select { border-radius: 2px; background: var(--surface); transition: border-color 0.3s var(--ease), box-shadow 0.3s var(--ease); }
+input[type="text"]:focus, input:not([type]):focus, select:focus { border-color: var(--arch); box-shadow: 0 2px 0 -1px var(--arch); outline: none; }
+input:focus-visible, select:focus-visible, .btn:focus-visible, a:focus-visible { outline-color: var(--seal); }
+.radio input, .check input { accent-color: var(--seal); }
+.radio, .check { transition: color 0.2s; }
+.radio:hover, .check:hover { color: var(--seal); }
+.chip, .pill { border-radius: 2px; }
+a { color: var(--fg); text-decoration-color: var(--arch); text-underline-offset: 3px; transition: color 0.2s; }
+a:hover { color: var(--seal); }
+
+/* Test stage: plain paper, no texture, architecture or entrance animation. The
+   stimulus stays on its white card; buttons only darken while pressed. */
+#stage { background: var(--bg); }
+#stage h1, #stage h2 { font-family: var(--font-head); color: var(--head); font-weight: 500; }
+#stage .jspsych-display-element, #stage .jspsych-content, #stage #jspsych-progressbar-container { font-family: var(--font-ui); }
+#stage .jspsych-btn { border-radius: 2px; font-family: var(--font-ui); transition: background-color 0.2s, border-color 0.2s; }
+#stage .jspsych-btn:hover { border-color: var(--arch); background: var(--accent-soft); }
+#stage .jspsych-btn:active { background: var(--line); }
+#stage #jspsych-progressbar-inner { background-color: var(--arch); }
+.ld-img { border-radius: 2px; box-shadow: 0 0 0 1px var(--line); }
+.fixation { font-family: var(--font-ui); color: var(--muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  #app::before, #app::after, html::after, .seal, #app > header, #app > main > *, .grid-start > * > *, main.stack > * { animation: none !important; }
+  #app::before, #app::after { opacity: var(--arch-alpha); }
+}
