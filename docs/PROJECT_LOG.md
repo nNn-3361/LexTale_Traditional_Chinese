@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-18: Added the team's second batch of 15 pseudo-characters as P066-P080; six already exist in Unicode and were left out, so the set has 90 real and 29 pseudo items. (#20)
 - 2026-11-18: The team now uses one beta preview page, with the current item set; README links to it, and the old preview page only links to the new one. (#19)
 - 2026-11-18: Team review removed 15 more pseudo-characters from `stimuli/sets/pilot-v2/` (listed in `excluded.csv`), leaving 90 real and 20 pseudo items. (#18)
 - 2026-11-18: Team decision: pseudo-characters that already exist as Unicode characters are not used. Removed 30 of the 65 from `stimuli/sets/pilot-v2/` (listed in `excluded.csv`), leaving 90 real and 35 pseudo items; IDs are not reused. (#17)
