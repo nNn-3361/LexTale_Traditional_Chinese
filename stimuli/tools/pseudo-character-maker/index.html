@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>繁體假字組字器</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@100..900&family=Noto+Serif+TC:wght@200..900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: workbench — editor (sources → composed glyph on a 米字格) beside the item list; stacks on phones */
 :root{
@@ -164,6 +164,9 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
               <label class="check" style="color:var(--muted)"><span id="sy-l">高 100%</span><input id="sy" type="range" min="10" max="300" value="100"></label>
               <label class="check"><input id="lock" type="checkbox"> 鎖定長寬比</label>
               <button id="resetMove">此部件置中原大小</button>
+              <button id="fitSize" title="把整個字等比例縮放、置中到參考框（真字的中位大小）">校正字的大小</button>
+              <button id="calWeight" title="依目前的寬高比例換字重，讓兩個部件的筆畫粗細接近真字">校正筆畫粗細</button>
+              <label class="check"><input id="showFrame" type="checkbox" checked> 顯示參考框</label>
               <div class="note" id="moveInfo" style="flex-basis:100%;text-align:center"></div>
             </div>
             <div class="tools" id="eraseTools" role="group" aria-label="橡皮擦" hidden>
@@ -209,6 +212,10 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 (() => {
 const $ = id => document.getElementById(id);
 const FONTS = { sans: '"Noto Sans TC"', serif: '"Noto Serif TC"' };
+// font weights available from Google Fonts for each family (variable fonts)
+const WRANGE = { sans: [100, 900], serif: [200, 900] };
+// Common characters used as a size and stroke reference when the list has fewer than 10 real characters.
+const REF_CHARS = '的一是不了人我在有他這中大來上國個到說們為子和你地出道也時年';
 const S = 400;
 const NOMOVE = { dx: 0, dy: 0, sx: 1, sy: 1 };
 // A part's place on the result (manual layout): out = (src - S/2) * s + S/2 + d, per axis, in 400 x 400 glyph pixels.
@@ -234,14 +241,17 @@ const gcache = new Map();
 function fam() { return FONTS[state.font]; }
 // A glyph drawn before the web font has loaded uses a fallback font. Such a glyph is marked and not cached,
 // so it is drawn again with the right font once the font is ready (otherwise it could end up in an export).
-function glyph(ch) {
-  const key = state.font + ch; if (gcache.has(key)) return gcache.get(key);
+// w = font weight (400 = regular). The baseline is always measured at weight 400, so a heavier or lighter
+// part stays in the same place.
+function glyph(ch, w = 400) {
+  const key = state.font + ch + (w === 400 ? '' : '@' + w); if (gcache.has(key)) return gcache.get(key);
   const c = document.createElement('canvas'); c.width = c.height = S;
   const x = c.getContext('2d', { willReadFrequently: true });
-  let ready = true; try { ready = document.fonts.check(`400 64px ${fam()}`, ch + '永'); } catch (e) {}
+  let ready = true; try { ready = document.fonts.check(`400 64px ${fam()}`, ch + '永') && document.fonts.check(`${w} 64px ${fam()}`, ch); } catch (e) {}
   x.font = `400 ${Math.round(S * 0.86)}px ${fam()}, serif`;
   x.textAlign = 'center'; x.textBaseline = 'alphabetic'; x.fillStyle = '#000';
   const m = x.measureText('永');
+  if (w !== 400) x.font = `${w} ${Math.round(S * 0.86)}px ${fam()}, serif`;
   x.fillText(ch, S / 2, S / 2 + (m.actualBoundingBoxAscent - m.actualBoundingBoxDescent) / 2);
   if (ready) gcache.set(key, c); else c.fallback = true;
   return c;
@@ -280,6 +290,7 @@ const sideOf = (it, k) => it[k] || (k === 'sideA' ? 'first' : 'second');
 const cropOf = (it, k) => it['crop' + k] || presetCrop(it.struct, sideOf(it, 'side' + k), it['cut' + k]);
 const moveOf = (it, k) => it['move' + k] || NOMOVE;
 const posOf = (it, k) => it['pos' + k] || NOPOS;
+const weightOf = (it, k) => it['weight' + k] || 400;
 const isManual = it => it.layout === 'manual';
 const isMoved = m => !!m && (m.dx !== 0 || m.dy !== 0 || m.sx !== 1 || m.sy !== 1);
 // If a crop is a half glyph along the structure's axis, return { side, cut } (for the cut_* / keep_* CSV columns).
@@ -298,9 +309,9 @@ const isWhole = c => c[0] === 0 && c[1] === 0 && c[2] === 100 && c[3] === 100;
 // only a group that lies clearly on both sides (parts whose strokes touch) is cut along the box edge.
 // mode 'line': plain straight cut along the box edges (items made before stroke cutting existed).
 const kcache = new Map();
-function kept(ch, crop, mode) {
-  const key = [state.font, ch, crop.join(','), mode].join('|'); if (kcache.has(key)) return kcache.get(key);
-  const src = glyph(ch), [x0, y0, x1, y1] = crop.map(v => v / 100 * S);
+function kept(ch, crop, mode, w = 400) {
+  const key = [state.font, ch, crop.join(','), mode, w].join('|'); if (kcache.has(key)) return kcache.get(key);
+  const src = glyph(ch, w), [x0, y0, x1, y1] = crop.map(v => v / 100 * S);
   const img = src.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, S, S), d = img.data;
   const onKeep = i => { const x = i % S, y = i / S | 0; return x >= x0 && x < x1 && y >= y0 && y < y1; };
   let mixed = 0;
@@ -434,7 +445,7 @@ function compose(it) {
   const c = layer(), x = c.getContext('2d');
   if (it.kind === 'real') { x.drawImage(glyph(it.ch), 0, 0); return c; }
   const mode = it.cutMode || 'line', cA = cropOf(it, 'A'), cB = cropOf(it, 'B'), v = it.struct === 'tb';
-  const ka = kept(it.a, cA, mode), kb = kept(it.b, cB, mode);
+  const ka = kept(it.a, cA, mode, weightOf(it, 'A')), kb = kept(it.b, cB, mode, weightOf(it, 'B'));
   if (isManual(it)) {
     const parts = [partLayer(ka, posOf(it, 'A'), it.eraseA), partLayer(kb, posOf(it, 'B'), it.eraseB)];
     x.drawImage(parts[0], 0, 0); x.drawImage(parts[1], 0, 0);
@@ -473,6 +484,11 @@ function paint(cv, src, opt = {}) {
     x.beginPath(); x.moveTo(W / 2, 0); x.lineTo(W / 2, W); x.moveTo(0, W / 2); x.lineTo(W, W / 2); x.moveTo(0, 0); x.lineTo(W, W); x.moveTo(W, 0); x.lineTo(0, W); x.stroke(); x.restore();
   }
   x.drawImage(tint(src, css('--ink')), 0, 0, W, W);
+  if (opt.frame) { // reference frame: the median ink box of real characters
+    const [l, t, r, b] = opt.frame.map(v => v / S * W);
+    x.save(); x.strokeStyle = css('--ok'); x.globalAlpha = .8; x.lineWidth = Math.max(1, W / 200); x.setLineDash([W / 40, W / 60]);
+    x.strokeRect(l, t, r - l, b - t); x.restore();
+  }
   if (opt.hl) x.drawImage(tint(opt.hl, css('--zhu')), 0, 0, W, W);
   if (opt.crop) { // shade what is cut away, outline the crop box
     const [l, t, r, b] = opt.crop.map(p => p / 100 * W);
@@ -494,7 +510,7 @@ const ch = k => firstChar($('in' + k).value);
 function cur() {
   const e = state.ed;
   const er = k => state.erase.filter(x => x[k]).map(x => copyStroke(x[k]));
-  return { kind: 'pseudo', layout: 'manual', a: ch('A'), b: ch('B'), struct: state.struct, cropA: e.A.crop.slice(), cropB: e.B.crop.slice(), posA: { ...e.A.pos }, posB: { ...e.B.pos }, cutMode: $('cutStroke').checked ? 'stroke' : 'line', eraseA: er('A'), eraseB: er('B') };
+  return { kind: 'pseudo', layout: 'manual', a: ch('A'), b: ch('B'), struct: state.struct, cropA: e.A.crop.slice(), cropB: e.B.crop.slice(), posA: { ...e.A.pos }, posB: { ...e.B.pos }, weightA: e.A.weight || 400, weightB: e.B.weight || 400, cutMode: $('cutStroke').checked ? 'stroke' : 'line', eraseA: er('A'), eraseB: er('B') };
 }
 const copyStroke = st => ({ r: st.r, s: st.s.slice(), p: st.p.map(q => q.slice()) });
 // A brush stroke drawn on the result (points in result pixels), written in the source glyph pixels of part k.
@@ -522,16 +538,19 @@ function refresh() {
   $('sx').value = pc(m.sx); $('sy').value = pc(m.sy);
   $('sx-l').textContent = `寬 ${pc(m.sx)}%`; $('sy-l').textContent = `高 ${pc(m.sy)}%`;
   $('selA').setAttribute('aria-pressed', state.sel === 'A'); $('selB').setAttribute('aria-pressed', state.sel === 'B');
-  $('moveInfo').textContent = KS.map(k => { const v = state.ed[k].pos; return `${k}：寬 ${pc(v.sx)}%、高 ${pc(v.sy)}%（相對原字）`; }).join('　') + '。調整一個部件不會改變另一個。';
+  $('moveInfo').textContent = KS.map(k => {
+    const e = state.ed[k], v = e.pos, r = strokeRatio(e.weight || 400, v);
+    return `${k}：寬 ${pc(v.sx)}%、高 ${pc(v.sy)}%、字重 ${e.weight || 400}` + (r ? `、筆畫約為真字的 ${pc(r)}%` : '');
+  }).join('　') + '。調整一個部件不會改變另一個。';
   // One source may be left empty, to adjust one part at a time; an item needs both to be added to the list.
   const one = !it.a || !it.b;
   if (!it.a && !it.b) { $('addPseudo').disabled = true; for (const k of ['cvA', 'cvB', 'cvOut']) paint($(k), layer(), { grid: k === 'cvOut' }); $('cutWarn').innerHTML = ''; return; }
-  paint($('cvA'), it.a ? glyph(it.a) : layer(), { crop: it.a ? it.cropA : null });
-  paint($('cvB'), it.b ? glyph(it.b) : layer(), { crop: it.b ? it.cropB : null });
+  paint($('cvA'), it.a ? glyph(it.a, it.weightA) : layer(), { crop: it.a ? it.cropA : null });
+  paint($('cvB'), it.b ? glyph(it.b, it.weightB) : layer(), { crop: it.b ? it.cropB : null });
   const out = compose(it);
   let hl = null;
   if (state.mode === 'move') hl = out.parts[state.sel === 'A' ? 0 : 1];
-  paint($('cvOut'), out, { grid: true, hl });
+  paint($('cvOut'), out, { grid: true, hl, frame: $('showFrame').checked && refFrame() });
   const [ma, mb] = out.mixed, w = $('cutWarn');
   const warns = [];
   const bad = [ma > 40 ? `A「${it.a}」` : '', mb > 40 ? `B「${it.b}」` : ''].filter(Boolean);
@@ -541,6 +560,7 @@ function refresh() {
   // the automatic layout itself squeezes a part a little along the axis, so only a clear difference is flagged
   if (KS.some(k => { const v = state.ed[k].pos; return Math.max(v.sx, v.sy) / Math.min(v.sx, v.sy) > 1.2; })) warns.push('寬高比例差很多，筆畫粗細可能和真字不一致');
   $('undoErase').disabled = $('clearErase').disabled = !state.erase.length;
+  for (const k of KS) { const e = state.ed[k], r = strokeRatio(e.weight || 400, e.pos); if (ch(k) && r && Math.abs(r - 1) > 0.15) warns.push(`部件 ${k} 的筆畫約為真字的 ${Math.round(r * 100)}%，可按「校正筆畫粗細」`); }
   if (one) warns.push(`${it.a ? 'B' : 'A'} 字是空的：可以先調好部件 ${it.a ? 'A' : 'B'}，兩個字都填了才能加入清單`);
   w.innerHTML = '';
   for (const t of warns) { const s = document.createElement('span'); s.className = 'chip warn'; s.textContent = t; w.append(s); }
@@ -595,15 +615,17 @@ function renderList() {
     box.append(g);
   }
   $('zip').disabled = $('csv').disabled = !state.items.length || !downloads;
+  prepareRef(); // the reference may change when real characters are added or removed
 }
-function loadIntoEditor(it) {
+async function loadIntoEditor(it) {
+  await ensureFont(it.a + it.b, [weightOf(it, 'A'), weightOf(it, 'B')]);
   $('inA').value = it.a; $('inB').value = it.b; state.struct = it.struct;
   $('st-lr').setAttribute('aria-pressed', it.struct === 'lr'); $('st-tb').setAttribute('aria-pressed', it.struct === 'tb');
   $('cutStroke').checked = (it.cutMode || 'line') === 'stroke';
   const places = placesOf(it);
   for (const k of KS) {
     const c = cropOf(it, k).slice(), h = halfOf(it.struct, c);
-    state.ed[k] = { crop: c, pre: h ? h.side : isWhole(c) ? 'whole' : 'custom', pos: places[k] };
+    state.ed[k] = { crop: c, pre: h ? h.side : isWhole(c) ? 'whole' : 'custom', pos: places[k], weight: weightOf(it, k) };
   }
   if (isManual(it)) state.erase = [...(it.eraseA || []).map(st => ({ A: copyStroke(st) })), ...(it.eraseB || []).map(st => ({ B: copyStroke(st) }))];
   else { // older item: its strokes were drawn on the result; give each stroke to the parts whose ink it covers
@@ -633,18 +655,19 @@ function status(t) { $('status').textContent = t; }
 
 // ---------- export ----------
 function csvText() {
-  const rows = [['item_id', 'lexicality', 'char', 'source_a', 'source_b', 'structure', 'cut_a', 'cut_b', 'keep_a', 'keep_b', 'crop_a', 'crop_b', 'move_a', 'move_b', 'cut_mode', 'manual_edit', 'erase_strokes', 'font', 'image', 'layout', 'place_a', 'place_b', 'erase_a', 'erase_b']];
+  const rows = [['item_id', 'lexicality', 'char', 'source_a', 'source_b', 'structure', 'cut_a', 'cut_b', 'keep_a', 'keep_b', 'crop_a', 'crop_b', 'move_a', 'move_b', 'cut_mode', 'manual_edit', 'erase_strokes', 'font', 'image', 'layout', 'place_a', 'place_b', 'erase_a', 'erase_b', 'weight_a', 'weight_b']];
   const fontName = state.font === 'sans' ? 'Noto Sans TC' : 'Noto Serif TC';
   const mv = m => JSON.stringify([m.dx, m.dy, m.sx, m.sy]);
   for (const it of state.items) {
-    if (it.kind === 'real') { rows.push([it.id, 'real', it.ch, '', '', '', '', '', '', '', '', '', '', '', '', 'no', '', fontName, it.id + '.png', '', '', '', '', '']); continue; }
+    if (it.kind === 'real') { rows.push([it.id, 'real', it.ch, '', '', '', '', '', '', '', '', '', '', '', '', 'no', '', fontName, it.id + '.png', '', '', '', '', '', '', '']); continue; }
     const cA = cropOf(it, 'A'), cB = cropOf(it, 'B'), hA = halfOf(it.struct, cA), hB = halfOf(it.struct, cB), man = isManual(it);
     rows.push([it.id, 'pseudo', '', it.a, it.b, it.struct === 'lr' ? '⿰' : '⿱',
       hA ? hA.cut : '', hB ? hB.cut : '', hA ? SIDE_CSV[it.struct][hA.side] : '', hB ? SIDE_CSV[it.struct][hB.side] : '',
       JSON.stringify(cA), JSON.stringify(cB), man ? '' : mv(moveOf(it, 'A')), man ? '' : mv(moveOf(it, 'B')),
       it.cutMode || 'line', hasErase(it) ? 'yes' : 'no', it.erase && it.erase.length ? JSON.stringify(it.erase) : '', fontName, it.id + '.png',
       man ? 'manual' : 'auto', man ? mv(posOf(it, 'A')) : '', man ? mv(posOf(it, 'B')) : '',
-      man && it.eraseA && it.eraseA.length ? JSON.stringify(it.eraseA) : '', man && it.eraseB && it.eraseB.length ? JSON.stringify(it.eraseB) : '']);
+      man && it.eraseA && it.eraseA.length ? JSON.stringify(it.eraseA) : '', man && it.eraseB && it.eraseB.length ? JSON.stringify(it.eraseB) : '',
+      man ? weightOf(it, 'A') : '', man ? weightOf(it, 'B') : '']);
   }
   return '﻿' + rows.map(r => r.map(v => /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : v).join(',')).join('\n');
 }
@@ -653,7 +676,7 @@ async function offer(filename, data) {
   catch (e) { status(e && e.code === 'declined' ? '已取消下載' : '無法下載：' + (e && e.message || '未知錯誤')); }
 }
 async function doZip() {
-  status('打包中…'); await ensureFont(state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''));
+  status('打包中…'); await ensureFont(state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''), itemWeights());
   const z = new JSZip();
   for (const it of state.items) { const b = await new Promise(r => exportCanvas(it).toBlob(r, 'image/png')); z.file(it.id + '.png', b); }
   z.file('items.csv', csvText());
@@ -662,19 +685,91 @@ async function doZip() {
 }
 
 // ---------- fonts ----------
-async function ensureFont(text) {
-  try { await document.fonts.load(`400 64px ${fam()}`, text + '永'); } catch (e) {} // 永 sets the baseline
+async function ensureFont(text, weights = [400]) {
+  for (const w of new Set([400, ...weights])) {
+    try { await document.fonts.load(`${w} 64px ${fam()}`, text + '永'); } catch (e) {} // 永 sets the baseline
+  }
 }
+const itemWeights = () => state.items.flatMap(i => i.kind === 'pseudo' ? [weightOf(i, 'A'), weightOf(i, 'B')] : []).concat(KS.map(k => state.ed[k].weight || 400));
 async function rerenderAll() {
-  gcache.clear(); kcache.clear(); await ensureFont($('inA').value + $('inB').value + state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''));
-  refresh(); renderList();
+  gcache.clear(); kcache.clear(); refCache.clear();
+  await ensureFont($('inA').value + $('inB').value + state.items.map(i => i.kind === 'real' ? i.ch : i.a + i.b).join(''), itemWeights());
+  refresh(); renderList(); prepareRef();
+}
+
+// ---------- size and stroke reference ----------
+// Reference characters: the real characters in the list (when there are at least 10), otherwise REF_CHARS.
+const refChars = () => { const r = [...new Set(state.items.filter(i => i.kind === 'real').map(i => i.ch))]; return r.length >= 10 ? r.join('') : REF_CHARS; };
+const refCache = new Map(), refPending = new Map(); // per font + reference characters: { frame, table }
+const median = a => { const b = a.slice().sort((p, q) => p - q), n = b.length; return n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2; };
+// average stroke width of a glyph in pixels, estimated as 2 x ink area / ink outline length
+function strokeWidth(c) {
+  const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, S, S).data, on = i => d[i * 4 + 3] > 127;
+  let A = 0, P = 0;
+  for (let y = 1; y < S - 1; y++) for (let x = 1; x < S - 1; x++) { const i = y * S + x; if (!on(i)) continue; A++; if (!on(i - 1)) P++; if (!on(i + 1)) P++; if (!on(i - S)) P++; if (!on(i + S)) P++; }
+  return P ? 2 * A / P : 0;
+}
+// Reference frame (median ink box of the reference characters at weight 400) and a table of
+// stroke width by weight, relative to weight 400, averaged over the reference characters.
+function prepareRef() {
+  const chars = refChars(), key = state.font + '|' + chars; if (refCache.has(key)) return Promise.resolve(refCache.get(key));
+  if (!refPending.has(key)) refPending.set(key, measureRef(chars, key).finally(() => refPending.delete(key)));
+  return refPending.get(key);
+}
+async function measureRef(chars, key) {
+  const [lo, hi] = WRANGE[state.font], ws = []; for (let w = lo; w <= hi; w += 50) ws.push(w);
+  await ensureFont(chars, ws);
+  const boxes = [...chars].map(ch => inkBox(glyph(ch))).filter(Boolean);
+  const frame = [0, 1, 2, 3].map(i => median(boxes.map(b => b[i])));
+  const base = [...chars].map(ch => strokeWidth(glyph(ch)));
+  const table = ws.map(w => [w, [...chars].reduce((t, ch, i) => t + (base[i] ? strokeWidth(glyph(ch, w)) / base[i] : 1), 0) / chars.length]);
+  const r = { frame, table }; refCache.set(key, r); refresh(); return r;
+}
+const refNow = () => refCache.get(state.font + '|' + refChars());
+const refFrame = () => { const r = refNow(); return r && r.frame; };
+// stroke width of a part relative to a real character: weight factor x the average of width and height scale
+function strokeRatio(w, pos) {
+  const r = refNow(); if (!r) return null;
+  const t = r.table; let f = w <= t[0][0] ? t[0][1] : t[t.length - 1][1];
+  for (let i = 1; i < t.length; i++) if (w >= t[i - 1][0] && w <= t[i][0]) { const [w0, f0] = t[i - 1], [w1, f1] = t[i]; f = f0 + (f1 - f0) * (w - w0) / (w1 - w0); break; }
+  return f * (pos.sx + pos.sy) / 2;
+}
+// the weight whose strokes, at this scale, come closest to a real character's (limited to the font's range)
+function weightFor(pos) {
+  const r = refNow(); if (!r) return 400;
+  const want = 2 / (pos.sx + pos.sy), t = r.table;
+  if (want <= t[0][1]) return t[0][0];
+  if (want >= t[t.length - 1][1]) return t[t.length - 1][0];
+  for (let i = 1; i < t.length; i++) if (t[i][1] >= want) { const [w0, f0] = t[i - 1], [w1, f1] = t[i]; return Math.round((w0 + (w1 - w0) * (want - f0) / (f1 - f0)) / 10) * 10; }
+  return 400;
+}
+async function calibrateWeight() {
+  await prepareRef();
+  const ws = {}; for (const k of KS) if (ch(k)) ws[k] = weightFor(state.ed[k].pos);
+  await ensureFont($('inA').value + $('inB').value, Object.values(ws));
+  for (const k in ws) state.ed[k].weight = ws[k];
+  const lim = KS.filter(k => ch(k) && Math.abs(strokeRatio(ws[k], state.ed[k].pos) - 1) > 0.05);
+  refresh();
+  status(lim.length ? `部件 ${lim.join('、')} 縮放太多，字重已到上下限，筆畫無法完全校正。` : '已依目前的大小校正筆畫粗細。');
+}
+// Scale the whole character (both parts together, keeping their proportions) and centre it in the reference frame.
+async function fitSize() {
+  const r = await prepareRef(), it = cur(), out = compose(it), b = inkBox(out); if (!b) return;
+  const f = r.frame, s = Math.min((f[2] - f[0]) / (b[2] - b[0]), (f[3] - f[1]) / (b[3] - b[1]));
+  const c0 = [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2], c1 = [(f[0] + f[2]) / 2, (f[1] + f[3]) / 2];
+  for (const k of KS) {
+    const p = state.ed[k].pos;
+    p.dx = Math.round(((S / 2 + p.dx - c0[0]) * s + c1[0] - S / 2) * 10) / 10; p.sx = Math.round(p.sx * s * 1000) / 1000;
+    p.dy = Math.round(((S / 2 + p.dy - c0[1]) * s + c1[1] - S / 2) * 10) / 10; p.sy = Math.round(p.sy * s * 1000) / 1000;
+  }
+  refresh(); status(`已把整個字縮放 ${Math.round(s * 100)}% 並置中到參考框。大小改了，筆畫粗細請再按「校正筆畫粗細」。`);
 }
 
 // ---------- wire up ----------
 load(); $('font').value = state.font;
 $('st-lr').onclick = () => setStruct('lr'); $('st-tb').onclick = () => setStruct('tb');
 // a new source character keeps both parts' places and all eraser strokes (only 復原 / 清除擦除 remove strokes)
-KS.forEach(k => $('in' + k).addEventListener('input', async () => { await ensureFont($('inA').value + $('inB').value); doAuto(); }));
+KS.forEach(k => $('in' + k).addEventListener('input', async () => { await ensureFont($('inA').value + $('inB').value, KS.map(j => state.ed[j].weight || 400)); doAuto(); }));
 $('auto').onclick = () => doAuto();
 $('cutStroke').onchange = refresh;
 
@@ -779,7 +874,7 @@ cvOut.addEventListener('keydown', e => {
 // Scale the selected part about the centre of its ink; the other part is not touched.
 function setScale(which, v) {
   const k = state.sel, m = state.ed[k].pos, s = Math.round(v) / 100, c = ch(k);
-  const b = c ? inkBox(kept(c, state.ed[k].crop, $('cutStroke').checked ? 'stroke' : 'line').c) : null;
+  const b = c ? inkBox(kept(c, state.ed[k].crop, $('cutStroke').checked ? 'stroke' : 'line', state.ed[k].weight || 400).c) : null;
   const cx = b ? (b[0] + b[2]) / 2 : S / 2, cy = b ? (b[1] + b[3]) / 2 : S / 2;
   const set = (ax, val) => { // keep the ink centre where it is on the result
     const ctr = ax === 'sx' ? cx : cy, d = ax === 'sx' ? 'dx' : 'dy';
@@ -792,7 +887,10 @@ function setScale(which, v) {
 $('sx').addEventListener('input', e => setScale('sx', +e.target.value));
 $('sy').addEventListener('input', e => setScale('sy', +e.target.value));
 $('lock').onchange = () => { if ($('lock').checked) setScale('sx', +$('sx').value); };
-$('resetMove').onclick = () => { state.ed[state.sel].pos = { ...NOPOS }; refresh(); };
+$('resetMove').onclick = () => { state.ed[state.sel].pos = { ...NOPOS }; state.ed[state.sel].weight = 400; refresh(); };
+$('calWeight').onclick = calibrateWeight;
+$('fitSize').onclick = fitSize;
+$('showFrame').onchange = refresh;
 $('undoErase').onclick = () => { state.erase.pop(); refresh(); };
 $('clearErase').onclick = () => { state.erase = []; refresh(); };
 $('addPseudo').onclick = addPseudo;
