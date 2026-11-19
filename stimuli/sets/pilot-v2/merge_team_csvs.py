@@ -1,6 +1,6 @@
 import csv, shutil, sys, os
 src = sys.argv[1]; out = sys.argv[2]
-# Folders of the later pseudo-character batches ("pseudo-characters 2" to "pseudo-characters 4":
+# Folders of the later pseudo-character batches ("pseudo-characters 2" to "pseudo-characters 5":
 # each one items.csv plus images), in order.
 later_dirs = sys.argv[3:]
 def rows(p): return list(csv.DictReader(open(os.path.join(src, p), encoding='utf-8-sig')))
@@ -26,8 +26,10 @@ BATCH3 = ['P001', 'P002', 'P003', 'P004', 'P006', 'P008', 'P009', 'P010', 'P011'
 # Fourth batch (2026-11-19): 17 new items, team IDs P001-P031 with gaps; new IDs P092-P108.
 BATCH4 = ['P001', 'P003', 'P008', 'P009', 'P010', 'P017', 'P018', 'P020', 'P021', 'P022',
           'P023', 'P024', 'P025', 'P026', 'P028', 'P030', 'P031']
+# Fifth batch (2026-11-19): 6 new items, team IDs P002-P007; new IDs P109-P114.
+BATCH5 = ['P002', 'P003', 'P004', 'P005', 'P006', 'P007']
 LATER = [('pseudo-characters 2', BATCH2, 66), ('pseudo-characters 3', BATCH3, 81),
-         ('pseudo-characters 4', BATCH4, 92)]
+         ('pseudo-characters 4', BATCH4, 92), ('pseudo-characters 5', BATCH5, 109)]
 assert len(later_dirs) == len(LATER)
 assert len(set(pmap.values())) == 65
 # Pseudo-characters left out because the shape already exists as an encoded Unicode character
@@ -46,6 +48,8 @@ EXCLUDED = {
     # fourth batch
     'P096': '𨠃', 'P097': '㖦', 'P098': '𤛔', 'P101': '𧾼', 'P102': '𦕸', 'P105': '䛞',
     'P107': '𥅰',
+    # fifth batch
+    'P109': '䯏',
 }
 # Pseudo-characters the team removed after reviewing the set (2026-11-18). IDs are not reused.
 TEAM_REMOVED = ['P003', 'P004', 'P010', 'P017', 'P018', 'P022', 'P023', 'P026', 'P029',

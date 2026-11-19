@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 34 | P006-P108, with gaps (see below) |
+| Pseudo-characters | 39 | P006-P114, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -20,9 +20,9 @@ All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker
 - `excluded.csv`: pseudo-characters left out, with the reason (`exists_in_unicode` or `team_review`, see below).
 - `merge_team_csvs.py`: the script that merged the team's batch exports into `items.csv`
   and copied the images. Usage:
-  `python3 merge_team_csvs.py <team folder> <this folder> <batch 2 folder> <batch 3 folder> <batch 4 folder>`,
+  `python3 merge_team_csvs.py <team folder> <this folder> <batch 2 folder> <batch 3 folder> <batch 4 folder> <batch 5 folder>`,
   where the team folder has `real words/` and `fake words/` with the exported CSVs and the
-  renamed PNGs, and each later batch folder (`pseudo-characters 2` to `pseudo-characters 4`) has
+  renamed PNGs, and each later batch folder (`pseudo-characters 2` to `pseudo-characters 5`) has
   one `items.csv` and its PNGs.
 - `items.csv` has the maker's `weight_a` and `weight_b` columns (stroke thickness). They are
   empty for items made before the maker had this setting.
@@ -125,6 +125,17 @@ new IDs P092-P108 in file order. Seven already exist in Unicode and were left ou
 The other ten were added: P092, P093, P094, P095, P099, P100, P103, P104, P106, P108.
 34 pseudo-characters remain in total.
 
+## Fifth batch (2026-11-19)
+
+The team made 6 more (folder `pseudo-characters 5`, team IDs P002-P007). They get new IDs
+P109-P114 in file order. One already exists in Unicode and was left out:
+
+| New ID | Team ID | Shape | Existing character |
+| --- | --- | --- | --- |
+| P109 | P002 | ⿰骨舌 | 䯏 U+4BCF |
+
+The other five were added: P110, P111, P112, P113, P114. 39 pseudo-characters remain in total.
+
 ## Review before the pilot [TBD]
 
 Every item must be checked by a person (see the maker's README). Items to look at first,
@@ -137,5 +148,6 @@ found while merging (component readings are from the images and may be wrong):
   of its right part.
 - P104 (氣+錦, 气 around 帛) has small leftover marks below 帛 and at the left edge
   [Unverified, confidence 70%; found by an automatic search for small separate ink spots].
-- The set has 90 real and 34 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+- P114 (盤+愛, 般 over 夂) looks close to the real character 媻 (般 over 女).
+- The set has 90 real and 39 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
   uses 60 real and 30 pseudo in its final test].
