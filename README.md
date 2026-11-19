@@ -140,10 +140,10 @@ Dockerfile, docker-compose.yml          Runs the full system
 
 Research team at National Taipei University of Technology, Taiwan.
 
-Team members: Nelson, Ho; Michelle, Chang; Whether Yu
-Supervisor: Dr. Shawn Chang 
-Department: Applied English
-Contact information: nelsonho4559@gmail.com, 950214michelle@gmail.com
+- Team members: Nelson, Ho; Michelle, Chang; Whether Yu
+- Supervisor: Dr. Shawn Chang 
+- Department: Applied English
+- Contact information: nelsonho4559@gmail.com, 950214michelle@gmail.com
 
 ## References
 
