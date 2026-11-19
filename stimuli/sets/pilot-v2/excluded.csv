@@ -66,3 +66,10 @@ P085,替,田,team_review,,,pseudo-characters 3/items.csv,P006
 P086,考,站,exists_in_unicode,𦒻,U+264BB,pseudo-characters 3/items.csv,P008
 P087,鈣,喔,exists_in_unicode,𫒷,U+2B4B7,pseudo-characters 3/items.csv,P009
 P089,霧,緾,team_review,,,pseudo-characters 3/items.csv,P011
+P096,酷,牧,exists_in_unicode,𨠃,U+28803,pseudo-characters 4/items.csv,P010
+P097,吃,棟,exists_in_unicode,㖦,U+35A6,pseudo-characters 4/items.csv,P017
+P098,慢,牧,exists_in_unicode,𤛔,U+246D4,pseudo-characters 4/items.csv,P018
+P101,跳,肋,exists_in_unicode,𧾼,U+27FBC,pseudo-characters 4/items.csv,P022
+P102,聆,裡,exists_in_unicode,𦕸,U+26578,pseudo-characters 4/items.csv,P023
+P105,談,桿,exists_in_unicode,䛞,U+46DE,pseudo-characters 4/items.csv,P026
+P107,戴,鉬,exists_in_unicode,𥅰,U+25170,pseudo-characters 4/items.csv,P030
