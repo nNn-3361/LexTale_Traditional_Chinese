@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 24 | P006-P091, with gaps (see below) |
+| Pseudo-characters | 34 | P006-P108, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -20,9 +20,9 @@ All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker
 - `excluded.csv`: pseudo-characters left out, with the reason (`exists_in_unicode` or `team_review`, see below).
 - `merge_team_csvs.py`: the script that merged the team's batch exports into `items.csv`
   and copied the images. Usage:
-  `python3 merge_team_csvs.py <team folder> <this folder> <batch 2 folder> <batch 3 folder>`,
+  `python3 merge_team_csvs.py <team folder> <this folder> <batch 2 folder> <batch 3 folder> <batch 4 folder>`,
   where the team folder has `real words/` and `fake words/` with the exported CSVs and the
-  renamed PNGs, and each later batch folder (`pseudo-characters 2`, `pseudo-characters 3`) has
+  renamed PNGs, and each later batch folder (`pseudo-characters 2` to `pseudo-characters 4`) has
   one `items.csv` and its PNGs.
 - `items.csv` has the maker's `weight_a` and `weight_b` columns (stroke thickness). They are
   empty for items made before the maker had this setting.
@@ -107,6 +107,24 @@ team confirmed the stroke is meant, so P081 is kept.
 The other eight were added: P081, P083, P084, P085, P088, P089, P090, P091.
 After the second team review (above), 24 pseudo-characters remain in total.
 
+## Fourth batch (2026-11-19)
+
+The team made 17 more (folder `pseudo-characters 4`, team IDs P001-P031 with gaps). They get
+new IDs P092-P108 in file order. Seven already exist in Unicode and were left out:
+
+| New ID | Team ID | Shape | Existing character |
+| --- | --- | --- | --- |
+| P096 | P010 | ⿰酉攵 | 𨠃 U+28803 (⿰酉攴) |
+| P097 | P017 | ⿰口東 | 㖦 U+35A6 |
+| P098 | P018 | ⿰牛曼 | 𤛔 U+246D4 |
+| P101 | P022 | ⿰𧾷力 | 𧾼 U+27FBC |
+| P102 | P023 | ⿰耳里 | 𦕸 U+26578 |
+| P105 | P026 | ⿰言旱 | 䛞 U+46DE |
+| P107 | P030 | ⿹𢦏目 | 𥅰 U+25170 |
+
+The other ten were added: P092, P093, P094, P095, P099, P100, P103, P104, P106, P108.
+34 pseudo-characters remain in total.
+
 ## Review before the pilot [TBD]
 
 Every item must be checked by a person (see the maker's README). Items to look at first,
@@ -115,5 +133,9 @@ found while merging (component readings are from the images and may be wrong):
 - P021 (魄+棵, 白+果) is drawn so that its left part looks like 目, which would make it the
   encoded character 𥇬. Kept because 白+果 is not encoded; the team should decide.
 - P009 (住 over 灬) looks close to 焦.
-- The set has 90 real and 24 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+- P094 (族+談, 言 with the right part of 族) differs from the real character 誒 only in the top
+  of its right part.
+- P104 (氣+錦, 气 around 帛) has small leftover marks below 帛 and at the left edge
+  [Unverified, confidence 70%; found by an automatic search for small separate ink spots].
+- The set has 90 real and 34 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
   uses 60 real and 30 pseudo in its final test].

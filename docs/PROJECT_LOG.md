@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-19: Added the team's fourth batch of 17 pseudo-characters as P092-P108; seven already exist in Unicode and were left out, so the set has 90 real and 34 pseudo items. (#TBD)
 - 2026-11-18: Pseudo-character maker: fixed the width and height sliders moving while being dragged (warnings that appeared above them, and labels that changed width); warnings now sit below the controls. (#26)
 - 2026-11-18: Second team review removed 13 pseudo-characters (P038, P044, P066, P067, P069, P070, P074-P077, P080, P085, P089), leaving 90 real and 24 pseudo items. (#25)
 - 2026-11-18: Beta page restyled: off-white paper, pale yellow ink-wash architecture, light grey Song-style headings, and small animations (fade-in, seal, ink ripple on buttons). The test screen, test logic and timing are unchanged; the pilot page is not changed. (#23)
