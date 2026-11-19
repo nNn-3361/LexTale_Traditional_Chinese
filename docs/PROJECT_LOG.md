@@ -2,7 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
-- 2026-11-19: Added the team's fifth batch of 6 pseudo-characters as P109-P114; one already exists in Unicode and was left out, so the set has 90 real and 39 pseudo items. (#TBD)
+- 2026-11-19: Added the team's fifth batch of 6 pseudo-characters as P109-P114; one already exists in Unicode and was left out, so the set has 90 real and 39 pseudo items. (#28)
 - 2026-11-19: Added the team's fourth batch of 17 pseudo-characters as P092-P108; seven already exist in Unicode and were left out, so the set has 90 real and 34 pseudo items. (#27)
 - 2026-11-18: Pseudo-character maker: fixed the width and height sliders moving while being dragged (warnings that appeared above them, and labels that changed width); warnings now sit below the controls. (#26)
 - 2026-11-18: Second team review removed 13 pseudo-characters (P038, P044, P066, P067, P069, P070, P074-P077, P080, P085, P089), leaving 90 real and 24 pseudo items. (#25)
