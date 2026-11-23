@@ -1,11 +1,11 @@
-/* Beta page theme: off-white paper, pale yellow ink-wash architecture, light grey
+/* Page theme: off-white paper, pale yellow ink-wash architecture, light grey
    Song-style type.
-   Loaded by the beta page (main.ts) and the pilot page (pilot.ts), after
+   Loaded by the pilot page (pilot.ts) and the analysis page (analysis-page.ts), after
    beta.css. It changes colours, fonts, decoration and small animations;
    layout, test logic and timing are unchanged. On the test screen there is no
    texture, architecture or animation behind the stimulus, which stays on a
    plain white card.
-   Fonts (both SIL OFL 1.1, linked from Google Fonts in beta.html and pilot.html):
+   Fonts (both SIL OFL 1.1, linked from Google Fonts in pilot.html and analysis.html):
    Chiron Sung HK, a Song typeface with brush-like stroke ends, for headings;
    Noto Serif TC for text. The architecture is drawn in art/*.svg (used as
    masks, so its colour comes from --arch). */

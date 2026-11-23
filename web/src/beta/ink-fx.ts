@@ -1,6 +1,5 @@
 /**
- * Ink-spread ripple on buttons of the beta page's start, result and analysis
- * pages (inside #app). It is not attached to the test stage (#stage), so it
+ * Ink-spread ripple on buttons of the pilot and analysis pages (inside #app). It is not attached to the test stage (#stage), so it
  * cannot affect trial display or response timing.
  */
 export function installInkFx(root: HTMLElement): void {

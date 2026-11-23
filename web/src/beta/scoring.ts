@@ -1,6 +1,6 @@
 /**
- * Scores for the beta page. These are computed in the browser only for the
- * beta; in the full system scores are computed on the server
+ * Scores for the pilot and analysis pages. These are computed in the browser
+ * only for these pages; in the full system scores are computed on the server
  * (server/app/scoring.py). Which score the final test uses is decided from the
  * pilot data [TBD] (research proposal, section 5.6).
  *

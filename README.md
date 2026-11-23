@@ -49,30 +49,30 @@ Made by the team between 2026-11-06 and 2026-11-11:
 | --- | --- |
 | Pseudo-character maker tool | Done (`stimuli/tools/pseudo-character-maker/`). |
 | Pilot item pool | Team-made set in `stimuli/sets/pilot-v2/` (90 real, 39 pseudo); manual review not finished. |
-| Beta page for the team | Done and online as a private preview (see below). |
-| Pilot page (no server) | Code merged. Not live yet: the Google Sheet and the `PILOT_RESULTS_URL` repository variable still need to be set up (the first workflow run on 2026-11-11 was skipped for this reason). |
+| Pilot page (no server) | Live on GitHub Pages since 2026-11-23: https://nnn-3361.github.io/LexTale_Traditional_Chinese/ . Results go to the team's Google Sheet; a test run on 2026-11-23 confirmed this. |
+| Item analysis page | `analysis.html` on the same site, for researchers (see below). It replaced the beta page, which was removed on 2026-11-23 (team decision). |
 | Full system (FastAPI + MySQL) | Skeleton done. Not deployed; no server. |
 | Consent form and ethics review (IRB) | Placeholder text only [TBD]. |
 | Data collection | Not started. |
 
-## Three versions of the test
+## Two versions of the test
 
-The same test exists in three forms, for three purposes. They share the test logic (trial display, keys, reaction-time measurement) but differ in where they run and where results go.
+The same test exists in two forms, for two purposes. They share the test logic (trial display, keys, reaction-time measurement) but differ in where they run and where results go.
 
-| | Beta page | Pilot page (no maintenance) | Full system |
-| --- | --- | --- | --- |
-| Purpose | The team tries the items and the flow, and looks at item statistics before the review is done | Collecting pilot data from participants | Pilot and validation studies, and later public use with instant scores |
-| Code | `web/beta.html` (PR #7) | `web/pilot.html`, `web/apps-script/Code.gs` (PR #8) | `server/`, `web/index.html` (PR #3) |
-| Runs on | A claude.ai Artifact preview, or any static web server | GitHub Pages (free for public repositories) | A server the team runs (Docker Compose) |
-| Results go to | The browser (`localStorage`); in the Artifact preview, a shared store so the team's runs are pooled | A Google Sheet owned by the team, through an Apps Script web app | MySQL database |
-| Needs maintenance | No | No server; a team member does a one-time setup | Yes: a server, backups, updates |
-| Consent page | No (internal use only, not for research data) | Yes (draft text, needs ethics approval) | Yes (draft text, needs ethics approval) |
-| Status | Usable now | Merged, waiting for one-time setup | Skeleton; on hold until hosting is discussed with the supervisor |
-| Docs | [`web/README.md`](web/README.md) | [`docs/pilot-hosting.md`](docs/pilot-hosting.md) | [`server/README.md`](server/README.md) |
+| | Pilot page (no maintenance) | Full system |
+| --- | --- | --- |
+| Purpose | Collecting pilot data from participants | Pilot and validation studies, and later public use with instant scores |
+| Code | `web/pilot.html`, `web/apps-script/Code.gs` (PR #8) | `server/`, `web/index.html` (PR #3) |
+| Runs on | GitHub Pages (free for public repositories) | A server the team runs (Docker Compose) |
+| Results go to | A Google Sheet owned by the team, through an Apps Script web app | MySQL database |
+| Needs maintenance | No server; a team member does a one-time setup | Yes: a server, backups, updates |
+| Consent page | Yes (draft text, needs ethics approval) | Yes (draft text, needs ethics approval) |
+| Status | Live | Skeleton; on hold until hosting is discussed with the supervisor |
+| Docs | [`docs/pilot-hosting.md`](docs/pilot-hosting.md) | [`server/README.md`](server/README.md) |
 
-Beta preview for the team: https://claude.ai/artifact/Tqw1BBmZGANDoy4Kt8ZC3y (a private claude.ai page; ask the project owner for access). It uses the current item set (90 real, 39 pseudo). The earlier preview page, which used the removed draft pool, now only links here.
+Item analysis: `analysis.html` on the pilot site (https://nnn-3361.github.io/LexTale_Traditional_Chinese/analysis.html). Import the CSV of the results sheet's `trials` tab to see per-item statistics; the data stays in the browser. It replaced the beta page and its claude.ai previews, removed on 2026-11-23 (team decision; the runs saved in those previews were backed up outside the repository first). See [`web/README.md`](web/README.md).
 
-All three use the F key for "real character" and the J key for "not a real character", or buttons on phones and tablets. Items appear in a new random order in each run, each after a 500 ms fixation cross.
+Both use the F key for "real character" and the J key for "not a real character", or buttons on phones and tablets. Items appear in a new random order in each run, each after a 500 ms fixation cross.
 
 ## Item bank
 
@@ -93,7 +93,7 @@ The team decided on 90 items per test with real : pseudo = 2 : 1, that is 60 rea
 
 How the 90 items are chosen:
 
-- **Pilot (now).** Each run draws 60 real and 30 pseudo items at random from the item set (set choice `form90`, `FORM_REAL` / `FORM_PSEUDO` and `planRun` in `web/src/beta/bank.ts`, added in #29). Every run keeps the 2:1 ratio, and every item in the set, which is still being changed, gets pilot data. The item IDs of each run are stored with its answers. This is the default on the beta page and the only choice on the pilot page.
+- **Pilot (now).** Each run draws 60 real and 30 pseudo items at random from the item set (set choice `form90`, `FORM_REAL` / `FORM_PSEUDO` and `planRun` in `web/src/beta/bank.ts`, added in #29). Every run keeps the 2:1 ratio, and every item in the set, which is still being changed, gets pilot data. The item IDs of each run are stored with its answers. This is the only choice on the pilot page.
 - **Final test (planned).** One fixed set of 60 real and 30 pseudo items, chosen from the pilot data with classical item analysis (percent correct, point-biserial correlation) and item response theory (IRT), keeping items with good discrimination and a wide range of difficulty [TBD].
 
 ## Scoring
@@ -105,7 +105,7 @@ All pages compute and store the scores below; the server stores the first three.
 | Averaged score | (H / 60 x 100 + (30 - FA) / 30 x 100) / 2 | 0 to 100 | LexTALE: "averaging the percentages correct for these two item types" so that a yes bias and a no bias are penalized equally (Lemhöfer & Broersma, 2012, Part 1) |
 | Ghent score (corrected accuracy) | H - 2 x FA | -60 to 60 | LEXTALE_CH "Corrected Accuracy", equation 2 (Chan & Chang, 2018); also the Ghent score in Wen et al. (2023) |
 | Normalised Ghent score | 100 x (H - 2 x FA) / 60 | -100 to 100 | LexCHI (Wen et al., 2023, section "Introducing the normalised Ghent score") |
-| d' | z(hit rate) - z(false alarm rate), log-linear correction | about -5 to 5 | Signal detection theory; beta and pilot pages only |
+| d' | z(hit rate) - z(false alarm rate), log-linear correction | about -5 to 5 | Signal detection theory; pilot and analysis pages only |
 
 On a form with exactly twice as many real as pseudo items, the first three scores are linear transforms of each other:
 
@@ -136,7 +136,7 @@ docs/PROJECT_LOG.md         One line per change, newest first
 docs/pilot-hosting.md       Setup and limits of the no-maintenance pilot
 stimuli/tools/pseudo-character-maker/   Browser tool that builds pseudo-character images
 stimuli/sets/pilot-v2/                  The pilot item set: items.csv, images/, and the merge script
-web/                        Test pages: beta.html, pilot.html, index.html (full system); apps-script/
+web/                        Pages: pilot.html, analysis.html, index.html (full system); apps-script/
 server/                     FastAPI + MySQL backend for the full system (not deployed)
 Dockerfile, docker-compose.yml          Runs the full system
 .github/workflows/pilot-pages.yml       Publishes the pilot page to GitHub Pages

@@ -9,8 +9,6 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "beta:prepare": "node scripts/prepare-beta-bank.mjs",
-    "beta:dev": "npm run beta:prepare && vite --config vite.beta.config.ts",
-    "beta:build": "tsc --noEmit && npm run beta:prepare && vite build --config vite.beta.config.ts",
     "pilot:dev": "npm run beta:prepare && vite --config vite.pilot.config.ts",
     "pilot:build": "tsc --noEmit && npm run beta:prepare && vite build --config vite.pilot.config.ts && node scripts/rename-pilot-index.mjs"
   },
