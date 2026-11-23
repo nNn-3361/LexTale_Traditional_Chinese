@@ -1,11 +1,11 @@
 /* Beta page theme: off-white paper, pale yellow ink-wash architecture, light grey
    Song-style type.
-   Loaded only by the beta page (main.ts), after beta.css; the pilot page keeps
-   the plain style. It changes colours, fonts, decoration and small animations;
+   Loaded by the beta page (main.ts) and the pilot page (pilot.ts), after
+   beta.css. It changes colours, fonts, decoration and small animations;
    layout, test logic and timing are unchanged. On the test screen there is no
    texture, architecture or animation behind the stimulus, which stays on a
    plain white card.
-   Fonts (both SIL OFL 1.1, linked from Google Fonts in beta.html):
+   Fonts (both SIL OFL 1.1, linked from Google Fonts in beta.html and pilot.html):
    Chiron Sung HK, a Song typeface with brush-like stroke ends, for headings;
    Noto Serif TC for text. The architecture is drawn in art/*.svg (used as
    masks, so its colour comes from --arch). */
@@ -118,6 +118,10 @@ legend, .field > span { font-weight: 500; }
   transform: rotate(-4deg); animation: stamp 0.7s 0.5s var(--ease) both;
 }
 @keyframes stamp { 0% { opacity: 0; transform: rotate(-4deg) scale(1.8); } 60% { opacity: 1; transform: rotate(-4deg) scale(0.92); } 100% { opacity: 1; transform: rotate(-4deg) scale(1); } }
+
+/* Pilot page header: title block only, same width as the pilot content. */
+.top.pilot { display: block; }
+.top.pilot .en { margin-top: 4px; letter-spacing: 0.08em; }
 
 /* Tabs: an ink stroke grows under the hovered or current tab. */
 .tabs { background: none; padding: 0; gap: 20px; border-radius: 0; }
