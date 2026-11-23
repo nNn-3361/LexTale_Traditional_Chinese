@@ -19,9 +19,13 @@ import { runTest } from "./run-test";
 import { RESULTS_URL, sendRun } from "./sheets";
 import * as store from "./store";
 import "./beta.css";
+import "./ink.css";
+import { installInkFx } from "./ink-fx";
 
 const app = document.getElementById("app")!;
 const stage = document.getElementById("stage")!;
+// Same ink-wash look as the beta page (ink.css); the ripple is only on #app, never on the test stage.
+installInkFx(app);
 
 const CODE_RE = /^[A-Za-z0-9_-]{1,20}$/;
 const params = new URLSearchParams(location.search);
@@ -33,7 +37,13 @@ function show(html: string) {
   stage.hidden = true;
   stage.innerHTML = "";
   app.hidden = false;
-  app.innerHTML = `<main class="pilot stack">${html}</main>`;
+  app.innerHTML = `
+    <header class="top pilot">
+      <p class="eyebrow">LexTALE 繁體中文</p>
+      <h1>繁體中文字彙測驗<span class="seal" aria-hidden="true">字</span></h1>
+      <p class="en">Traditional Chinese Character Test</p>
+    </header>
+    <main class="pilot stack">${html}</main>`;
   window.scrollTo(0, 0);
 }
 
@@ -41,10 +51,9 @@ function askConsent(): Promise<string | null> {
   const fromUrl = clean(params.get("p"));
   return new Promise((resolve) => {
     show(`
-      <h1>${text.title}</h1>
       ${RESULTS_URL ? "" : `<p class="draft">[Setup] VITE_RESULTS_URL is not set: answers will not be sent anywhere.</p>`}
       ${text.consent}
-      <form id="consent-form" class="stack-s">
+      <form id="consent-form" class="panel stack-s">
         <label class="field" for="pcode">
           <span>受試者編號（研究人員提供，沒有可留空）/ Participant code (from the researcher; leave empty if none)</span>
           <input id="pcode" maxlength="20" autocomplete="off" value="${fromUrl}" pattern="[A-Za-z0-9_\\-]{0,20}">

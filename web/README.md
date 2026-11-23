@@ -56,15 +56,15 @@ npm run beta:build   # writes dist-beta/, a static site (open it from any web se
 and its images and writes them to `web/.beta-bank/` (generated, not committed).
 To use another set: `node scripts/prepare-beta-bank.mjs path/to/set`.
 
-Look: the beta page uses an off-white paper style (`src/beta/ink.css`, loaded only by
-`beta.html`): a fibre texture, a roof eave and a pavilion in pale yellow ink wash
+Look: the beta page and the pilot page use the same off-white paper style
+(`src/beta/ink.css`, loaded by `beta.html` and `pilot.html`): a fibre texture, a roof eave and a pavilion in pale yellow ink wash
 (`src/beta/art/*.svg`, drawn for this project), light grey headings in Chiron Sung HK (a Song
 typeface with brush-like stroke ends), text in Noto Serif TC (both SIL Open Font License 1.1,
 loaded from Google Fonts, so the page falls back to system fonts offline), and a red seal.
 Small animations: pages fade in, the seal is stamped in, tabs get an ink underline, and buttons
 show an ink-spread ripple when pressed (`src/beta/ink-fx.ts`). The test screen has none of
 these: it stays plain, and the character images stay on a white card. Animations are off when
-the system asks for reduced motion. The pilot page keeps the plain style.
+the system asks for reduced motion.
 
 Flow:
 
