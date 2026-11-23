@@ -93,7 +93,7 @@ The team decided on 90 items per test with real : pseudo = 2 : 1, that is 60 rea
 
 How the 90 items are chosen:
 
-- **Pilot (now).** Each run draws 60 real and 30 pseudo items at random from the item set (`FORM` and `planRun` in `web/src/beta/bank.ts`). Every run keeps the 2:1 ratio, and every item in the set, which is still being changed, gets pilot data. The item IDs of each run are stored with its answers. This is the default on the beta page and the only choice on the pilot page.
+- **Pilot (now).** Each run draws 60 real and 30 pseudo items at random from the item set (set choice `form90`, `FORM_REAL` / `FORM_PSEUDO` and `planRun` in `web/src/beta/bank.ts`, added in #29). Every run keeps the 2:1 ratio, and every item in the set, which is still being changed, gets pilot data. The item IDs of each run are stored with its answers. This is the default on the beta page and the only choice on the pilot page.
 - **Final test (planned).** One fixed set of 60 real and 30 pseudo items, chosen from the pilot data with classical item analysis (percent correct, point-biserial correlation) and item response theory (IRT), keeping items with good discrimination and a wide range of difficulty [TBD].
 
 ## Scoring

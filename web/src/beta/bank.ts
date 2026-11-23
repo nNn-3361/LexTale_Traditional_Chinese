@@ -33,17 +33,9 @@ export async function loadBank(): Promise<Bank> {
   return res.json();
 }
 
-export type SetChoice = "form" | "all" | "quick";
-
-/**
- * Test length and ratio decided by the team on 2026-11-23: 90 items,
- * real : pseudo = 2 : 1 (60 real characters, 30 pseudo-characters), the same as
- * LEXTALE_CH (Chan & Chang, 2018).
- */
-export const FORM = { real: 60, pseudo: 30 } as const;
+export type SetChoice = "all" | "quick";
 
 export const SET_LABELS: Record<SetChoice, string> = {
-  form: `測驗版 ${FORM.real + FORM.pseudo} 題（${FORM.real} 真字、${FORM.pseudo} 假字）/ Test form (${FORM.real} real, ${FORM.pseudo} pseudo)`,
   all: "全部題目 / All items",
   quick: "快速試用 20 題 / Quick try (20 items)",
 };
@@ -67,12 +59,6 @@ const take = (items: Item[], lex: Lexicality, n: number) => shuffle(items.filter
 /**
  * Chooses the test items for a run and the practice items.
  *
- * "form" draws FORM.real real and FORM.pseudo pseudo items at random from the
- * bank for each run, so every run has the 2:1 ratio while every bank item
- * still gets pilot data. The items a run used are recorded with its trials.
- * The final test will be one fixed set chosen from the pilot data [TBD]. If the
- * bank has fewer items of a kind than the form needs, all of them are used.
- *
  * The bank has no separate practice items yet [TBD]. Practice items (2 real,
  * 2 pseudo) are taken from bank items outside the chosen test set when there
  * are enough; otherwise (the full set) they are taken from the set and left out
@@ -81,8 +67,7 @@ const take = (items: Item[], lex: Lexicality, n: number) => shuffle(items.filter
  */
 export function planRun(bank: Item[], choice: SetChoice, withPractice: boolean): Plan {
   let pool: Item[];
-  if (choice === "form") pool = [...take(bank, "real", FORM.real), ...take(bank, "pseudo", FORM.pseudo)];
-  else if (choice === "quick") pool = [...take(bank, "real", 10), ...take(bank, "pseudo", 10)];
+  if (choice === "quick") pool = [...take(bank, "real", 10), ...take(bank, "pseudo", 10)];
   else pool = bank.slice();
 
   let practice: Item[] = [];

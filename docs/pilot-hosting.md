@@ -16,8 +16,7 @@ It stays in the repository and can be used later.
 1. Consent page (the draft text in `web/src/text.ts`, [TBD]: needs ethics
    review approval) with an optional participant code field.
 2. Instructions, 4 practice items with feedback, then the test items in a new
-   random order: 60 real and 30 pseudo items drawn at random from the pilot set
-   for each participant (the 2:1 test form; practice items are not among them).
+   random order (all items in the pilot set, minus the 4 used for practice).
 3. Their answers are sent to the sheet. If sending fails, they can retry or
    download a CSV file to give to the researcher.
 4. A thank-you message and their averaged score. They do not see which items
