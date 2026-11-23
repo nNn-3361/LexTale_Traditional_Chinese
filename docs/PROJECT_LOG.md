@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-23: The pilot consent page has a small "for researchers" link to the item analysis page. (#33)
 - 2026-11-23: Removed the beta page and its claude.ai previews (team decision; saved runs backed up outside the repository). Its item analysis view is kept as analysis.html, published next to the pilot page. (#32)
 - 2026-11-23: Pilot page now uses the beta page's ink-wash design (same stylesheet, fonts and header seal); test logic and the test screen are unchanged. (#31)
 - 2026-11-23: Scoring for the 2:1 test form (60 real, 30 pseudo): the Ghent score now uses a fixed factor 2 (hits - 2 x false alarms), and the server also stores the Ghent and normalised Ghent scores. README records the test length decision and the team decision that the averaged score (0 to 100) is the main reported score. (#30)

@@ -122,6 +122,8 @@ legend, .field > span { font-weight: 500; }
 /* Pilot page header: title block only, same width as the pilot content. */
 .top.pilot { display: block; }
 .top.pilot .en { margin-top: 4px; letter-spacing: 0.08em; }
+.researcher-link { margin-top: 28px; font-size: 0.85em; text-align: right; }
+.researcher-link a { color: var(--muted); }
 
 /* Tabs: an ink stroke grows under the hovered or current tab. */
 .tabs { background: none; padding: 0; gap: 20px; border-radius: 0; }
