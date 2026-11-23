@@ -69,7 +69,7 @@ The workflow does nothing until `PILOT_RESULTS_URL` is set.
 
 The sheet gets two tabs, created on the first result:
 
-- `trials`: one row per test trial, with the same columns as the beta page's
+- `trials`: one row per test trial, with the same columns as the analysis page's
   raw CSV (`run_id`, `created_at`, `label`, `set`, `bank_set`, `position`,
   `item_id`, `lexicality`, `item_type`, `response`, `correct`, `rt_ms`,
   `source`, `participant_code`).
@@ -78,8 +78,10 @@ The sheet gets two tabs, created on the first result:
   RT of correct answers), the consent text version and the browser's user agent.
 
 For item analysis: File > Download > CSV of the `trials` tab, then import it
-with "匯入原始作答 CSV" on the beta page's item analysis view (`beta.html#analysis`,
-or the team's claude.ai preview page).
+with "匯入原始作答 CSV" on the item analysis page (`analysis.html` on the same
+site, for example
+`https://nnn-3361.github.io/LexTale_Traditional_Chinese/analysis.html`). The
+imported data stays in that browser.
 
 No names, emails or IP addresses are collected. Participant codes link to
 people only through the researcher's own list, which must not go into this

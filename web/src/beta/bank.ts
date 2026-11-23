@@ -1,4 +1,4 @@
-/** The item bank for the beta page, and how a run's item list is chosen. */
+/** The item bank for the pilot and analysis pages, and how a run's item list is chosen. */
 
 export type Lexicality = "real" | "pseudo";
 

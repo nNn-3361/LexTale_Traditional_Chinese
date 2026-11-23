@@ -1,5 +1,6 @@
 /**
- * Where the beta page keeps finished runs.
+ * Where the pilot and analysis pages keep finished runs (the storage key and
+ * collection name are kept from the removed beta page).
  *
  * - This browser (localStorage): always used.
  * - A shared store: only when the page runs as a claude.ai Artifact with the

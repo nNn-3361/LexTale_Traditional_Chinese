@@ -8,8 +8,8 @@
  * the pilot build as VITE_RESULTS_URL.
  *
  * Two tabs are created on first use:
- *   trials  one row per test trial. Same columns as the beta page's raw CSV,
- *           so a CSV download of this tab can be imported into the beta
+ *   trials  one row per test trial. Same columns as the analysis page's raw CSV,
+ *           so a CSV download of this tab can be imported into the analysis
  *           page's item analysis.
  *   runs    one row per finished test, with the scores the page computed.
  *

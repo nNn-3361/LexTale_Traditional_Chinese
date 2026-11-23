@@ -1,5 +1,5 @@
 /**
- * The test itself, shared by the beta page and the pilot page: preload,
+ * The test itself, used by the pilot page: preload,
  * instructions, practice with feedback, then the test items in the planned
  * order, each after a 500 ms fixation cross. The trial uses the same jsPsych
  * plugin as the real test page (../lexical-decision.ts), so keys, buttons and

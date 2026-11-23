@@ -1,5 +1,5 @@
 /**
- * Pilot page: the participant-facing version of the beta page, for collecting
+ * Pilot page: the participant-facing test page, for collecting
  * pilot data without a server of our own.
  *
  *   consent (+ optional participant code) -> test (beta/run-test.ts)
@@ -24,7 +24,7 @@ import { installInkFx } from "./ink-fx";
 
 const app = document.getElementById("app")!;
 const stage = document.getElementById("stage")!;
-// Same ink-wash look as the beta page (ink.css); the ripple is only on #app, never on the test stage.
+// Ink-wash look (ink.css), shared with the analysis page; the ripple is only on #app, never on the test stage.
 installInkFx(app);
 
 const CODE_RE = /^[A-Za-z0-9_-]{1,20}$/;
