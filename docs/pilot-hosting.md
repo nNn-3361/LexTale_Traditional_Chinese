@@ -79,6 +79,41 @@ The sheet gets two tabs, created on the first result:
   (averaged score, real and pseudo percent correct, Ghent score (hits - 2 x false alarms), d', mean
   RT of correct answers), the consent text version and the browser's user agent.
 
+### Summary tab (optional)
+
+A tab that updates itself with each new run: per group (the `?g=` label; runs
+without one are shown as "(未填)"), the number of runs, mean and SD of the
+averaged score, mean and SD of the Ghent score, and mean d'. Runs with the
+group `test` are left out. It counts runs, not people: a person who takes the
+test twice is counted twice, so check `participant_code` before analysis.
+
+To add it: in the sheet, add a tab (for example `summary`), click cell A1 and
+paste this formula. It reads the `runs` tab only and does not change it.
+
+```
+=LET(
+  id, runs!A2:A, lab, runs!D2:D, avg, runs!J2:J, gh, runs!M2:M, dp, runs!N2:N,
+  grp, IF(lab = "", "(未填)", lab),
+  keep, (id <> "") * (lab <> "test") = 1,
+  g, IFERROR(SORT(UNIQUE(FILTER(grp, keep))), "(還沒有資料)"),
+  VSTACK(
+    {"組別 group", "作答次數 n", "平均分數 平均", "平均分數 標準差", "Ghent 平均", "Ghent 標準差", "d′ 平均"},
+    HSTACK(
+      g,
+      MAP(g, LAMBDA(x, IFERROR(COUNT(FILTER(avg, keep, grp = x)), 0))),
+      MAP(g, LAMBDA(x, IFERROR(ROUND(AVERAGE(FILTER(avg, keep, grp = x)), 2), "-"))),
+      MAP(g, LAMBDA(x, IFERROR(ROUND(STDEV(FILTER(avg, keep, grp = x)), 2), "-"))),
+      MAP(g, LAMBDA(x, IFERROR(ROUND(AVERAGE(FILTER(gh, keep, grp = x)), 2), "-"))),
+      MAP(g, LAMBDA(x, IFERROR(ROUND(STDEV(FILTER(gh, keep, grp = x)), 2), "-"))),
+      MAP(g, LAMBDA(x, IFERROR(ROUND(AVERAGE(FILTER(dp, keep, grp = x)), 3), "-")))
+    )
+  )
+)
+```
+
+[Unverified, confidence 80%; written for Google Sheets' LET, MAP, LAMBDA,
+VSTACK and HSTACK functions and not yet tried in the team's sheet.]
+
 For item analysis: File > Download > CSV of the `trials` tab, then import it
 with "匯入原始作答 CSV" on the item analysis page (`analysis.html` on the same
 site, for example
