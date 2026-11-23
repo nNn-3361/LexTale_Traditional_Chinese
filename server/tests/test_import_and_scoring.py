@@ -5,7 +5,7 @@ from PIL import Image
 
 from app import cli
 from app import models as m
-from app.scoring import lextale_average
+from app.scoring import ghent_normalised, ghent_score, lextale_average
 
 
 def test_import_creates_version(db, demo_bank, media_dir):
@@ -75,3 +75,27 @@ def test_lextale_average():
     r = lextale_average(trials)
     assert r.value == 62.5
     assert r.details["real_total"] == 4 and r.details["pseudo_total"] == 2
+
+
+def _answered(lex, response):
+    correct = (response == m.Response.yes) == (lex == m.Lexicality.real)
+    t = m.Trial(role=m.ItemRole.test, is_correct=correct, response=response)
+    t.item = m.Item(lexicality=lex)
+    return t
+
+
+def test_ghent_scores_on_60_30_form():
+    # 60 real: 50 answered yes (hits). 30 pseudo: 6 answered yes (false alarms).
+    trials = (
+        [_answered(m.Lexicality.real, m.Response.yes)] * 50
+        + [_answered(m.Lexicality.real, m.Response.no)] * 10
+        + [_answered(m.Lexicality.pseudo, m.Response.yes)] * 6
+        + [_answered(m.Lexicality.pseudo, m.Response.no)] * 24
+    )
+    g = ghent_score(trials)
+    n = ghent_normalised(trials)
+    avg = lextale_average(trials)
+    assert g.value == 50 - 2 * 6
+    assert n.value == round(100 * 38 / 60, 4)
+    # On a 2:1 form the averaged score is 50 + normalised Ghent / 2.
+    assert abs(avg.value - (50 + n.value / 2)) < 1e-3

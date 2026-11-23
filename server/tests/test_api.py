@@ -1,3 +1,4 @@
+from app.scoring import SCORERS
 from app import models as m
 from app.config import get_settings
 
@@ -94,9 +95,9 @@ def test_research_mode_hides_score(client, db, demo_bank, media_dir):
     rid = _start(client, code)["run_id"]
     body = client.post(f"/api/runs/{rid}/finish").json()
     assert body["scores"] == [] and body["answered"] == 0
-    # The score is still computed and stored for the researchers.
+    # The scores are still computed and stored for the researchers.
     run = db.query(m.TestRun).filter_by(public_id=rid).one()
-    assert db.query(m.Score).filter_by(run_id=run.id).count() == 1
+    assert db.query(m.Score).filter_by(run_id=run.id).count() == len(SCORERS)
 
 
 def test_order_is_randomized_per_run(client, demo_session):

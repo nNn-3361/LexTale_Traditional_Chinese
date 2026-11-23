@@ -68,7 +68,9 @@ the system asks for reduced motion. The pilot page keeps the plain style.
 
 Flow:
 
-1. Choose the items: all items in the set, or a quick 20 (10 real, 10 pseudo).
+1. Choose the items: the test form (60 real and 30 pseudo items drawn at random
+   from the set for each run; the default), all items in the set, or a quick 20
+   (10 real, 10 pseudo).
    An optional group label (for example `native` or `learner`) is used to
    compare groups. It must not be a name or student ID.
 2. Instructions, then 4 practice items (2 real, 2 pseudo) with feedback. The
@@ -98,7 +100,7 @@ scores on the server, and the final scoring method is [TBD] after the pilot):
 | Score | Formula |
 | --- | --- |
 | Averaged score | (percent correct on real items + percent correct on pseudo items) / 2. LexTALE's score (Lemhoefer & Broersma, 2012, https://doi.org/10.3758/s13428-011-0146-0); same as the server's `lextale_avg`. Not affected by the real:pseudo ratio. |
-| Ghent-style score | real correct - (real items / pseudo items) x pseudo items answered "yes". For tests with twice as many real as pseudo items this is "real correct - 2 x false alarms", the Corrected Accuracy of LEXTALE_CH (Chan & Chang, 2018, equation 2; checked 2026-11-11). The Ghent score definition in Brysbaert (2013) has not been checked [Unverified]. The pilot set is 1:1, so the factor is 1. |
+| Ghent score | real items answered "yes" - 2 x pseudo items answered "yes". The Corrected Accuracy of LEXTALE_CH (Chan & Chang, 2018, equation 2; checked 2026-11-11) and the Ghent score as given in LexCHI (Wen et al., 2023, https://doi.org/10.3758/s13428-023-02151-z; checked 2026-11-23). The factor 2 fits the 60/30 test form; on "all items" or the quick 20 the ratio differs, so this score is only comparable between test-form runs. Shown with its normalised form, 100 x score / real items (Wen et al., 2023). Same as the server's `ghent` and `ghent_norm`. |
 | d' | z(hit rate) - z(false alarm rate), with the log-linear correction (add 0.5 to counts and 1 to totals) so rates of 0 or 1 still give a finite value. |
 
 ## Pilot page (no server)

@@ -74,7 +74,7 @@ The sheet gets two tabs, created on the first result:
   `item_id`, `lexicality`, `item_type`, `response`, `correct`, `rt_ms`,
   `source`, `participant_code`).
 - `runs`: one row per finished test, with the scores the page computed
-  (averaged score, real and pseudo percent correct, Ghent-style score, d', mean
+  (averaged score, real and pseudo percent correct, Ghent score (hits - 2 x false alarms), d', mean
   RT of correct answers), the consent text version and the browser's user agent.
 
 For item analysis: File > Download > CSV of the `trials` tab, then import it
