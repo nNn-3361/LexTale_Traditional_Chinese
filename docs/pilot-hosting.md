@@ -15,8 +15,12 @@ It stays in the repository and can be used later.
 
 1. Consent page (the draft text in `web/src/text.ts`, [TBD]: needs ethics
    review approval) with an optional participant code field.
-2. Instructions, 4 practice items with feedback, then the test items in a new
-   random order (all items in the pilot set, minus the 4 used for practice).
+2. Instructions, 4 practice items with feedback, then 90 test items in random
+   order: 60 real and 30 pseudo-characters (2:1, team decision 2026-11-23).
+   Each run draws a new random 60 + 30 from the pilot set
+   (`stimuli/sets/pilot-v2/`), so all items in the bank get responses. The
+   practice items come from bank items not drawn for that run, so no item is
+   shown twice. The final fixed 90 items are chosen from the pilot data [TBD].
 3. Their answers are sent to the sheet. If sending fails, they can retry or
    download a CSV file to give to the researcher.
 4. A thank-you message and their averaged score. They do not see which items

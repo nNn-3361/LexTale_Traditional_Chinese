@@ -33,9 +33,17 @@ export async function loadBank(): Promise<Bank> {
   return res.json();
 }
 
-export type SetChoice = "all" | "quick";
+export type SetChoice = "form90" | "all" | "quick";
+
+/**
+ * Test length and ratio decided by the team on 2026-11-23: 90 items per test,
+ * real:pseudo = 2:1 (60 real, 30 pseudo).
+ */
+export const FORM_REAL = 60;
+export const FORM_PSEUDO = 30;
 
 export const SET_LABELS: Record<SetChoice, string> = {
+  form90: "正式長度 90 題（60 真字 / 30 假字）/ Test length: 90 items (60 real / 30 pseudo)",
   all: "全部題目 / All items",
   quick: "快速試用 20 題 / Quick try (20 items)",
 };
@@ -59,6 +67,11 @@ const take = (items: Item[], lex: Lexicality, n: number) => shuffle(items.filter
 /**
  * Chooses the test items for a run and the practice items.
  *
+ * "form90" draws a new random 60 real + 30 pseudo items from the bank for
+ * every run. While the bank is larger than 90 items (pilot stage), this spreads
+ * responses over all items, so the team can pick the final fixed items from
+ * the pilot data. If the bank has fewer items of a kind, all of them are used.
+ *
  * The bank has no separate practice items yet [TBD]. Practice items (2 real,
  * 2 pseudo) are taken from bank items outside the chosen test set when there
  * are enough; otherwise (the full set) they are taken from the set and left out
@@ -68,6 +81,7 @@ const take = (items: Item[], lex: Lexicality, n: number) => shuffle(items.filter
 export function planRun(bank: Item[], choice: SetChoice, withPractice: boolean): Plan {
   let pool: Item[];
   if (choice === "quick") pool = [...take(bank, "real", 10), ...take(bank, "pseudo", 10)];
+  else if (choice === "form90") pool = [...take(bank, "real", FORM_REAL), ...take(bank, "pseudo", FORM_PSEUDO)];
   else pool = bank.slice();
 
   let practice: Item[] = [];
