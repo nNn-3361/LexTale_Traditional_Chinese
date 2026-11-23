@@ -2,7 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
-- 2026-11-23: Scoring for the 2:1 test form (60 real, 30 pseudo): the Ghent score now uses a fixed factor 2 (hits - 2 x false alarms), and the server also stores the Ghent and normalised Ghent scores. README records the test length decision and proposes the averaged score as the main score [TBD]. (#30)
+- 2026-11-23: Scoring for the 2:1 test form (60 real, 30 pseudo): the Ghent score now uses a fixed factor 2 (hits - 2 x false alarms), and the server also stores the Ghent and normalised Ghent scores. README records the test length decision and the team decision that the averaged score (0 to 100) is the main reported score. (#30)
 - 2026-11-19: Added the team's fifth batch of 6 pseudo-characters as P109-P114; one already exists in Unicode and was left out, so the set has 90 real and 39 pseudo items. (#28)
 - 2026-11-19: Added the team's fourth batch of 17 pseudo-characters as P092-P108; seven already exist in Unicode and were left out, so the set has 90 real and 34 pseudo items. (#27)
 - 2026-11-18: Pseudo-character maker: fixed the width and height sliders moving while being dragged (warnings that appeared above them, and labels that changed width); warnings now sit below the controls. (#26)

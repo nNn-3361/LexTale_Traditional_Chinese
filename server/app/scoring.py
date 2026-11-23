@@ -8,7 +8,7 @@ The test form is 60 real and 30 pseudo items (team decision, 2026-11-23).
 On such a 2:1 form the three scores below are linear transforms of each other
 (lextale_avg = 50 + ghent_norm / 2), so they rank participants identically;
 they are all stored so results can be compared with LexTALE, LEXTALE_CH and
-LexCHI. Which one is reported as the main score is decided by the team [TBD].
+LexCHI. The main reported score is lextale_avg (team decision, 2026-11-23).
 """
 
 from dataclasses import dataclass

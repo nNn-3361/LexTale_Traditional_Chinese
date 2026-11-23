@@ -113,7 +113,7 @@ On a form with exactly twice as many real as pseudo items, the first three score
 
 So they put participants in the same order and give the same correlation with proficiency test scores. Choosing among them only changes the scale that is reported. d' is different, because it is not linear in H and FA.
 
-Proposal for the team [TBD, to be confirmed]: report the averaged score (0 to 100) as the main score, because it is the original LexTALE score and the one participants already see on the pilot page; also report the Ghent score so results can be compared with LEXTALE_CH and LexCHI. This holds only while the test has exactly 60 real and 30 pseudo items; if the ratio changes, the scores are no longer equivalent and the choice must be made again. An IRT ability estimate (research proposal, section 5.6) is a separate option for after the pilot.
+Decision (2026-11-23): the averaged score (0 to 100) is the main reported score, because it is the original LexTALE score and the one participants already see on the pilot page. The Ghent score is also reported so results can be compared with LEXTALE_CH and LexCHI. This holds only while the test has exactly 60 real and 30 pseudo items; if the ratio changes, the scores are no longer equivalent and the choice must be made again. An IRT ability estimate (research proposal, section 5.6) is a separate option for after the pilot.
 
 ## Open issues
 
