@@ -14,7 +14,9 @@ It stays in the repository and can be used later.
 ## What participants see
 
 1. Consent page (the draft text in `web/src/text.ts`, [TBD]: needs ethics
-   review approval) with an optional participant code field.
+   review approval) with an optional participant code field. A small link at
+   the bottom leads researchers to the item analysis page (`analysis.html`);
+   it holds no participant data, only what is stored in that browser.
 2. Instructions, 4 practice items with feedback, then 90 test items in random
    order: 60 real and 30 pseudo-characters (2:1, team decision 2026-11-23).
    Each run draws a new random 60 + 30 from the pilot set

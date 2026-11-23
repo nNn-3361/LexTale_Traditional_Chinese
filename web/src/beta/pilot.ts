@@ -63,7 +63,8 @@ function askConsent(): Promise<string | null> {
           <button class="btn primary" type="submit">${text.agree}</button>
           <button class="btn" type="button" id="decline">${text.disagree}</button>
         </div>
-      </form>`);
+      </form>
+      <p class="muted researcher-link"><a href="analysis.html">研究人員：題目分析 / For researchers: item analysis</a></p>`);
     const form = document.getElementById("consent-form") as HTMLFormElement;
     form.addEventListener("submit", (e) => {
       e.preventDefault();
