@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-23: Pilot page now gives 90 items per test (60 real, 30 pseudo, 2:1, team decision), drawn at random from the pilot-v2 bank for each run; the beta page offers the same length. (#PR)
 - 2026-11-19: Added the team's fifth batch of 6 pseudo-characters as P109-P114; one already exists in Unicode and was left out, so the set has 90 real and 39 pseudo items. (#28)
 - 2026-11-19: Added the team's fourth batch of 17 pseudo-characters as P092-P108; seven already exist in Unicode and were left out, so the set has 90 real and 34 pseudo items. (#27)
 - 2026-11-18: Pseudo-character maker: fixed the width and height sliders moving while being dragged (warnings that appeared above them, and labels that changed width); warnings now sit below the controls. (#26)

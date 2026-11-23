@@ -27,7 +27,7 @@ const CODE_RE = /^[A-Za-z0-9_-]{1,20}$/;
 const params = new URLSearchParams(location.search);
 const clean = (v: string | null) => (v && CODE_RE.test(v) ? v : "");
 const group = clean(params.get("g"));
-const SET: SetChoice = "all";
+const SET: SetChoice = "form90";
 
 function show(html: string) {
   stage.hidden = true;
