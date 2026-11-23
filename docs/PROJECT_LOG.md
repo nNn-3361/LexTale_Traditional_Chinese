@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-23: Team decision: 90 items per test, real : pseudo = 2 : 1 (60 real, 30 pseudo). The pilot page and the beta default now draw 60 real and 30 pseudo items at random from the set for each run; the Ghent score now uses a fixed factor 2 (hits - 2 x false alarms), and the server also stores the Ghent and normalised Ghent scores. README proposes the averaged score as the main score [TBD]. (#[TBD])
 - 2026-11-19: Added the team's fifth batch of 6 pseudo-characters as P109-P114; one already exists in Unicode and was left out, so the set has 90 real and 39 pseudo items. (#28)
 - 2026-11-19: Added the team's fourth batch of 17 pseudo-characters as P092-P108; seven already exist in Unicode and were left out, so the set has 90 real and 34 pseudo items. (#27)
 - 2026-11-18: Pseudo-character maker: fixed the width and height sliders moving while being dragged (warnings that appeared above them, and labels that changed width); warnings now sit below the controls. (#26)

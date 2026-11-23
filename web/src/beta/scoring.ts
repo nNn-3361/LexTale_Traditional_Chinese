@@ -3,6 +3,12 @@
  * beta; in the full system scores are computed on the server
  * (server/app/scoring.py). Which score the final test uses is decided from the
  * pilot data [TBD] (research proposal, section 5.6).
+ *
+ * On a form with twice as many real as pseudo items (the 60/30 test form), the
+ * averaged score and the Ghent scores are linear transforms of each other:
+ *   avgPct = 50 + ghentPct / 2 = 50 + (5 / 6) * ghent   (for 60 real, 30 pseudo)
+ * so they rank participants the same way and correlate identically with other
+ * measures. d' is not a linear transform of them.
  */
 
 export interface ScoredTrial {
@@ -24,9 +30,15 @@ export interface RunScore {
   pseudoPct: number;
   /** LexTALE averaged score: mean of realPct and pseudoPct. Same as the server's lextale_avg. */
   avgPct: number;
-  /** hits - (realN / pseudoN) * falseAlarms. */
+  /**
+   * Corrected accuracy, hits - 2 * falseAlarms (LEXTALE_CH, Chan & Chang, 2018,
+   * equation 2; the "Ghent score"). Range -2 * pseudoN to realN.
+   */
   ghent: number;
-  /** ghent as a percentage of realN. */
+  /**
+   * Normalised Ghent score, 100 * ghent / realN (LexCHI, Wen et al., 2023).
+   * Range -100 to 100 on a 60/30 form.
+   */
   ghentPct: number;
   dPrime: number;
   /** Mean RT of correct answers, in ms; null if none. */
@@ -65,8 +77,7 @@ export function scoreRun(trials: ScoredTrial[]): RunScore {
   const pct = (k: number, n: number) => (n ? (100 * k) / n : 0);
   const realPct = pct(hits, real.length);
   const pseudoPct = pct(correctRejections, pseudo.length);
-  const ratio = pseudo.length ? real.length / pseudo.length : 0;
-  const ghent = hits - ratio * falseAlarms;
+  const ghent = hits - 2 * falseAlarms;
   // Log-linear correction (add 0.5 to counts, 1 to totals) keeps rates off 0 and 1.
   const hitRate = (hits + 0.5) / (real.length + 1);
   const faRate = (falseAlarms + 0.5) / (pseudo.length + 1);

@@ -27,7 +27,8 @@ const CODE_RE = /^[A-Za-z0-9_-]{1,20}$/;
 const params = new URLSearchParams(location.search);
 const clean = (v: string | null) => (v && CODE_RE.test(v) ? v : "");
 const group = clean(params.get("g"));
-const SET: SetChoice = "all";
+// 60 real + 30 pseudo per participant, drawn from the bank (see planRun).
+const SET: SetChoice = "form";
 
 function show(html: string) {
   stage.hidden = true;
