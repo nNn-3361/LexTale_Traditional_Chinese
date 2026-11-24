@@ -6,7 +6,7 @@ The team's own item set, made with the pseudo-character maker
 | Type | Items | IDs |
 | --- | --- | --- |
 | Real characters | 90 | R001-R090 |
-| Pseudo-characters | 43 | P006-P124, with gaps (see below) |
+| Pseudo-characters | 45 | P006-P128, with gaps (see below) |
 
 All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker.
 
@@ -20,9 +20,9 @@ All images are 400 x 400 transparent PNGs rendered in Noto Serif TC by the maker
 - `excluded.csv`: pseudo-characters left out, with the reason (`exists_in_unicode` or `team_review`, see below).
 - `merge_team_csvs.py`: the script that merged the team's batch exports into `items.csv`
   and copied the images. Usage:
-  `python3 merge_team_csvs.py <team folder> <this folder> <batch 2 folder> <batch 3 folder> <batch 4 folder> <batch 5 folder> <batch 6 folder>`,
+  `python3 merge_team_csvs.py <team folder> <this folder> <batch 2 folder> <batch 3 folder> <batch 4 folder> <batch 5 folder> <batch 6 folder> <batch 7 folder>`,
   where the team folder has `real words/` and `fake words/` with the exported CSVs and the
-  renamed PNGs, and each later batch folder (`pseudo-characters 2` to `pseudo-characters 6`) has
+  renamed PNGs, and each later batch folder (`pseudo-characters 2` to `pseudo-characters 7`) has
   one `items.csv` and its PNGs.
 - `items.csv` has the maker's `weight_a` and `weight_b` columns (stroke thickness). They are
   empty for items made before the maker had this setting.
@@ -153,6 +153,19 @@ new IDs P115-P124 in file order. Six already exist in Unicode and were left out:
 The other four were added: P119 (⿰貝肙), P120 (⿰亻羔), P122 (⿰禾背), P124 (⿱自皿).
 43 pseudo-characters remain in total.
 
+## Seventh batch (2026-11-24)
+
+The team made 5 more (folder `pseudo-characters 7`, team IDs P001-P006 with a gap). They get
+new IDs P125-P129 in file order. Three already exist in Unicode and were left out:
+
+| New ID | Team ID | Shape | Existing character |
+| --- | --- | --- | --- |
+| P126 | P002 | ⿱列心 | 㤠 U+3920 |
+| P127 | P003 | ⿰月賣 | 𦢌 U+2688C |
+| P129 | P006 | ⿺走鳥 | 𧽪 U+27F6A |
+
+The other two were added: P125 (⿰歹其), P128 (⿰忄而). 45 pseudo-characters remain in total.
+
 ## Review before the pilot [TBD]
 
 Every item must be checked by a person (see the maker's README). Items to look at first,
@@ -166,5 +179,5 @@ found while merging (component readings are from the images and may be wrong):
 - P104 (氣+錦, 气 around 帛) has small leftover marks below 帛 and at the left edge
   [Unverified, confidence 70%; found by an automatic search for small separate ink spots].
 - P114 (盤+愛, 般 over 夂) looks close to the real character 媻 (般 over 女).
-- The set has 90 real and 43 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
+- The set has 90 real and 45 pseudo items, not 1:1 [TBD: the team decides the ratio; LEXTALE_CH
   uses 60 real and 30 pseudo in its final test].
