@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-24: Added the team's seventh batch of 5 pseudo-characters as P125-P129; three already exist in Unicode and were left out, so the set has 90 real and 45 pseudo items. (#38)
 - 2026-11-24: Added the team's sixth batch of 10 pseudo-characters as P115-P124; six already exist in Unicode and were left out, so the set has 90 real and 43 pseudo items. (#37)
 - 2026-11-24: Pilot page: removed the "draft, needs ethics review approval" notice from the consent page (team request; whether ethics review is needed is still to be checked with the supervisor). (#36)
 - 2026-11-24: Pilot page: removed the "leave empty if none" hint from the participant code label (Chinese and English). (#35)

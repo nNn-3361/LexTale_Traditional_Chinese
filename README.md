@@ -2,7 +2,7 @@
 
 A short, character-based lexical decision test for Traditional Chinese, developed by a research team at National Taipei University of Technology (Taipei Tech). Test takers see one character at a time and decide whether it is a real character or not. The goal is a test of a few minutes that gives Chinese language teachers and researchers a quick estimate of a person's Chinese proficiency.
 
-> **Status (2026-11-23): development, before the pilot.** The team's own item set (90 real, 43 pseudo) has been added and is waiting for review. Each test has 90 items, 60 real and 30 pseudo (team decision, 2026-11-23). No participant data has been collected. The final item selection, the main score, and validity are not settled.
+> **Status (2026-11-23): development, before the pilot.** The team's own item set (90 real, 45 pseudo) has been added and is waiting for review. Each test has 90 items, 60 real and 30 pseudo (team decision, 2026-11-23). No participant data has been collected. The final item selection, the main score, and validity are not settled.
 
 ---
 
@@ -48,7 +48,7 @@ Made by the team between 2026-11-06 and 2026-11-11:
 | Area | State |
 | --- | --- |
 | Pseudo-character maker tool | Done (`stimuli/tools/pseudo-character-maker/`). |
-| Pilot item pool | Team-made set in `stimuli/sets/pilot-v2/` (90 real, 43 pseudo); manual review not finished. |
+| Pilot item pool | Team-made set in `stimuli/sets/pilot-v2/` (90 real, 45 pseudo); manual review not finished. |
 | Pilot page (no server) | Live on GitHub Pages since 2026-11-23: https://nnn-3361.github.io/LexTale_Traditional_Chinese/ . Results go to the team's Google Sheet; a test run on 2026-11-23 confirmed this. |
 | Item analysis page | `analysis.html` on the same site, for researchers (see below). It replaced the beta page, which was removed on 2026-11-23 (team decision). |
 | Full system (FastAPI + MySQL) | Skeleton done. Not deployed; no server. |
@@ -83,7 +83,7 @@ The team made its own set of real and pseudo-characters with the pseudo-characte
 | Type | Items |
 | --- | --- |
 | Real characters | 90 |
-| Pseudo-characters | 43 (of 124 made in six batches, 53 were removed because they already exist in Unicode and 28 after team review) |
+| Pseudo-characters | 45 (of 129 made in seven batches, 56 were removed because they already exist in Unicode and 28 after team review) |
 
 How the real characters were chosen, and which pseudo-characters use legal or illegal component positions, will be described here [TBD]. Every item is marked `review_status = pending`. The items to check first are listed in [`stimuli/sets/pilot-v2/README.md`](stimuli/sets/pilot-v2/README.md).
 
