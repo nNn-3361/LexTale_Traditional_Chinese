@@ -1,11 +1,11 @@
 /**
  * Item analysis page (analysis.html), published next to the pilot page.
  *
- * Researchers import the raw CSV downloaded from the pilot results sheet
- * (the trials tab) and see, per item: percent correct, percent "yes", mean RT
- * and point-biserial discrimination, with filters and CSV export. Runs taken
- * in this browser are included too. Nothing is sent anywhere: imported data
- * stays in this browser (localStorage).
+ * Runs are read from the pilot results sheet (trials tab, without participant
+ * codes) through the Apps Script web app each time the page opens, so anyone
+ * with the link sees the latest data. Runs taken or imported (raw CSV) in this
+ * browser are included too. Shown per item: percent correct, percent "yes",
+ * mean RT and point-biserial discrimination, with filters and CSV export.
  *
  * This page replaces the beta page (removed 2026-11-23, team decision); the
  * test itself is the pilot page (pilot.ts).
@@ -13,6 +13,7 @@
 import { itemCsv, itemStats, parseRawCsv, rawCsv, runScore, type ItemStat } from "./analysis";
 import { loadBank, type Bank, type Item } from "./bank";
 import * as store from "./store";
+import { fetchSheetRuns } from "./sheets";
 import "./beta.css";
 import "./ink.css";
 import { installInkFx } from "./ink-fx";
@@ -85,8 +86,12 @@ function band(s: ItemStat): "bad" | "warn" | "ok" | "none" {
 
 async function renderAnalysis() {
   showPage(`${header("題目分析 Item analysis")}<main><p class="muted">讀取中… Loading…</p></main>`);
-  const loaded = await store.loadRuns();
-  const all = loaded.runs;
+  const [loaded, sheet] = await Promise.all([store.loadRuns(), fetchSheetRuns()]);
+  const sheetRuns = Array.isArray(sheet) ? sheet : [];
+  // Runs from the results sheet first; a run also kept in this browser replaces the sheet copy.
+  const merged = new Map(sheetRuns.map((r) => [r.id, r]));
+  for (const r of loaded.runs) merged.set(r.id, r);
+  const all = [...merged.values()].sort((a, b) => a.createdAt.localeCompare(b.createdAt));
   const labels = [...new Set(all.map((r) => r.label || ""))].sort();
   const runs = all.filter((r) => !filters.label || (r.label || "(none)") === filters.label);
   const stats = itemStats(runs, bank.items);
@@ -107,12 +112,17 @@ async function renderAnalysis() {
 
   const counts = { bad: 0, warn: 0, ok: 0, none: 0 };
   for (const s of stats) counts[band(s)]++;
-  const sharedNote =
-    loaded.sharedCount === null
-      ? "只有這個瀏覽器的資料"
-      : loaded.sharedCount < 0
-        ? "共用資料讀取失敗，只顯示這個瀏覽器的資料"
-        : `共用資料 ${loaded.sharedCount} 次，這個瀏覽器 ${loaded.localCount} 次`;
+  const sheetNote =
+    sheet === null
+      ? "未設定結果試算表"
+      : sheet === "failed"
+        ? "結果試算表讀取失敗"
+        : sheet === "old-script"
+          ? "結果試算表的 Apps Script 需要重新部署才能自動讀取"
+          : `結果試算表 ${sheet.length} 次`;
+  const sharedNote = `${sheetNote}，這個瀏覽器 ${loaded.localCount} 次${
+    loaded.sharedCount !== null && loaded.sharedCount >= 0 ? `，共用資料 ${loaded.sharedCount} 次` : ""
+  }`;
 
   const runRows = runs
     .slice()
@@ -172,7 +182,7 @@ async function renderAnalysis() {
       ${
         runs.length
           ? ""
-          : `<div class="empty"><p>還沒有作答資料。請匯入從結果試算表 trials 分頁下載的 CSV。</p><p class="muted">No runs yet. Import the CSV downloaded from the trials tab of the results sheet.</p></div>`
+          : `<div class="empty"><p>還沒有作答資料。資料會自動從結果試算表讀取；也可以匯入從 trials 分頁下載的 CSV。</p><p class="muted">No runs yet. Data is read from the results sheet automatically; you can also import a CSV of its trials tab.</p></div>`
       }
       <details class="runs" ${runs.length ? "" : "hidden"}>
         <summary>各次作答分數 Runs (${runs.length})</summary>

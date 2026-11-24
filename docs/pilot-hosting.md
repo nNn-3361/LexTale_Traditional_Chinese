@@ -114,11 +114,16 @@ paste this formula. It reads the `runs` tab only and does not change it.
 [Unverified, confidence 80%; written for Google Sheets' LET, MAP, LAMBDA,
 VSTACK and HSTACK functions and not yet tried in the team's sheet.]
 
-For item analysis: File > Download > CSV of the `trials` tab, then import it
-with "匯入原始作答 CSV" on the item analysis page (`analysis.html` on the same
+For item analysis: open the item analysis page (`analysis.html` on the same
 site, for example
-`https://nnn-3361.github.io/LexTale_Traditional_Chinese/analysis.html`). The
-imported data stays in that browser.
+`https://nnn-3361.github.io/LexTale_Traditional_Chinese/analysis.html`). It
+reads the `trials` tab through the web app (`?data=trials`) each time it opens,
+so anyone with the link sees the latest data. The `participant_code` column is
+not sent, but labels, item responses and RTs are public to anyone who finds the
+web app URL (team decision 2026-11-24: acceptable for the pilot). This needs
+the `Code.gs` from 2026-11-24 or later; with an older deployment the page says
+the script must be redeployed. A CSV of the `trials` tab can still be imported
+with "匯入原始作答 CSV"; imported data stays in that browser.
 
 No names, emails or IP addresses are collected. Participant codes link to
 people only through the researcher's own list, which must not go into this

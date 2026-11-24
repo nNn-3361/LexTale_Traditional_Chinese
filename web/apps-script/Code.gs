@@ -28,8 +28,39 @@ var RUN_COLUMNS = [
 ];
 var MAX_TRIALS = 300;
 
-function doGet() {
+/**
+ * GET ?data=trials returns the trials tab as CSV, so the item analysis page
+ * can show the latest data without a manual download and import. The
+ * participant_code column is left out: the URL is public, and item analysis
+ * does not need it. Any other GET returns a short JSON note.
+ */
+function doGet(e) {
+  if (e && e.parameter && e.parameter.data === 'trials') {
+    return ContentService.createTextOutput(trialsCsv_()).setMimeType(ContentService.MimeType.CSV);
+  }
   return json_({ ok: true, info: 'LexTALE pilot results endpoint. Send results with POST.' });
+}
+
+var PUBLIC_TRIAL_COLUMNS = TRIAL_COLUMNS.filter(function (c) { return c !== 'participant_code'; });
+
+function trialsCsv_() {
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('trials');
+  var lines = [PUBLIC_TRIAL_COLUMNS.join(',')];
+  if (!sh || sh.getLastRow() < 2) return lines.join('\n');
+  var values = sh.getDataRange().getValues();
+  var head = values[0].map(String);
+  var idx = PUBLIC_TRIAL_COLUMNS.map(function (c) { return head.indexOf(c); });
+  for (var r = 1; r < values.length; r++) {
+    lines.push(idx.map(function (k) { return csvCell_(k < 0 ? '' : values[r][k]); }).join(','));
+  }
+  return lines.join('\n');
+}
+
+function csvCell_(v) {
+  if (v instanceof Date) v = v.toISOString();
+  var s = v === null || v === undefined ? '' : String(v);
+  // Values stored with a leading apostrophe by safe_() come back without it.
+  return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
 }
 
 function doPost(e) {
