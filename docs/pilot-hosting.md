@@ -13,8 +13,8 @@ It stays in the repository and can be used later.
 
 ## What participants see
 
-1. Consent page (the draft text in `web/src/text.ts`, [TBD]: needs ethics
-   review approval) with an optional participant code field. A small link at
+1. Consent page (the placeholder text in `web/src/text.ts`; whether it needs
+   ethics review approval is to be checked with the supervisor [TBD]) with an optional participant code field. A small link at
    the bottom leads researchers to the item analysis page (`analysis.html`);
    it holds no participant data, only what is stored in that browser.
 2. Instructions, 4 practice items with feedback, then 90 test items in random
@@ -138,7 +138,7 @@ repository (`AGENTS.md`, section 5). The raw sheet must not be committed either.
 - Google Apps Script has daily quotas; a pilot of a few hundred runs is far
   below them [Unverified, confidence 80%; check
   https://developers.google.com/apps-script/guides/services/quotas].
-- The data are stored by Google. The consent form and ethics application must
-  say where the data are kept [TBD].
+- The data are stored by Google. The consent form (and an ethics application,
+  if one is needed) must say where the data are kept [TBD].
 - Before collecting real data, the consent text must be final and
   `CONSENT_VERSION` in `web/src/text.ts` updated.

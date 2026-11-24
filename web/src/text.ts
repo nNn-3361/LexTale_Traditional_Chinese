@@ -2,8 +2,9 @@
  * Text shown to participants. Traditional Chinese with English below it,
  * because many participants are learners of Chinese.
  *
- * [TBD] The consent text is a placeholder. The final text must be approved by
- * the ethics review (IRB) before any data is collected. When the consent text
+ * [TBD] The consent text is a placeholder. Whether it needs ethics review
+ * (IRB) approval is to be checked with the supervisor; the "draft" notice was
+ * taken off the page on 2026-11-24 at the team's request. When the consent text
  * changes, change CONSENT_VERSION here and the CONSENT_VERSION setting of the
  * server together, so every run records which text the participant agreed to.
  */
@@ -22,8 +23,6 @@ export const text = {
   consent: `
     <div class="box">
       <h2>研究同意書 / Consent</h2>
-      <p class="draft">[TBD] 草稿：正式內容須經研究倫理審查核准。<br>
-      Draft: the final text must be approved by the ethics review.</p>
       ${both(
         "本測驗約需數分鐘。我們會記錄你的作答與反應時間，資料只用於研究，並以匿名方式分析。你可以隨時關閉頁面停止作答。",
         "This test takes a few minutes. We record your answers and response times. The data is used for research only and is analysed anonymously. You can stop at any time by closing the page.",
