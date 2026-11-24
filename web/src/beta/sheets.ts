@@ -9,7 +9,7 @@
  * ignores a run_id it already has, so a repeat never makes a duplicate.
  */
 import type { Item } from "./bank";
-import { isCorrect, runScore } from "./analysis";
+import { isCorrect, runScore, parseRawCsv } from "./analysis";
 import type { RunRecord } from "./store";
 
 export const RESULTS_URL: string = import.meta.env.VITE_RESULTS_URL ?? "";
@@ -85,4 +85,34 @@ export async function sendRun(run: RunRecord, items: Map<string, Item>): Promise
     }
   }
   return "failed";
+}
+
+/**
+ * Runs read from the results sheet (trials tab) through the same web app
+ * (GET ?data=trials, see Code.gs). null: no URL set; "old-script": the
+ * deployed script is older than this feature and must be redeployed;
+ * "failed": the request failed.
+ */
+export type SheetRuns = RunRecord[] | null | "old-script" | "failed";
+
+let sheetPromise: Promise<SheetRuns> | null = null;
+
+export function fetchSheetRuns(): Promise<SheetRuns> {
+  if (!sheetPromise) sheetPromise = loadSheetRuns();
+  return sheetPromise;
+}
+
+async function loadSheetRuns(): Promise<SheetRuns> {
+  if (!RESULTS_URL) return null;
+  try {
+    const sep = RESULTS_URL.includes("?") ? "&" : "?";
+    const res = await fetch(`${RESULTS_URL}${sep}data=trials&t=${Date.now()}`);
+    if (!res.ok) return "failed";
+    const text = await res.text();
+    if (text.trimStart().startsWith("{")) return "old-script";
+    return parseRawCsv(text).map((r) => ({ ...r, set: r.set || "import" }));
+  } catch (e) {
+    console.error(e);
+    return "failed";
+  }
 }
