@@ -2,7 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
-- 2026-11-24: Pilot page: removed the "leave empty if none" hint from the participant code label (Chinese and English). (#PR)
+- 2026-11-24: Pilot page: removed the "leave empty if none" hint from the participant code label (Chinese and English). (#35)
 - 2026-11-23: Documented an optional summary tab for the pilot results sheet (one formula: runs, mean and SD of the averaged and Ghent scores, mean d' per group, test runs left out). (#34)
 - 2026-11-23: The pilot consent page has a small "for researchers" link to the item analysis page. (#33)
 - 2026-11-23: Removed the beta page and its claude.ai previews (team decision; saved runs backed up outside the repository). Its item analysis view is kept as analysis.html, published next to the pilot page. (#32)
