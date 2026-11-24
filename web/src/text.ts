@@ -33,7 +33,7 @@ export const text = {
   disagree: "我不同意 / I do not agree",
   declined: both("你沒有同意參加，因此不會記錄任何資料。謝謝。", "You did not agree to take part, so no data was recorded. Thank you."),
 
-  participantCode: "受試者編號（研究人員提供，沒有可留空）/ Participant code (from the researcher; leave empty if none)",
+  participantCode: "受試者編號（研究人員提供）/ Participant code (from the researcher)",
   next: "下一步 / Next",
 
   preloading: "載入中… / Loading…",

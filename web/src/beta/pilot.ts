@@ -55,7 +55,7 @@ function askConsent(): Promise<string | null> {
       ${text.consent}
       <form id="consent-form" class="panel stack-s">
         <label class="field" for="pcode">
-          <span>受試者編號（研究人員提供，沒有可留空）/ Participant code (from the researcher; leave empty if none)</span>
+          <span>受試者編號（研究人員提供）/ Participant code (from the researcher)</span>
           <input id="pcode" maxlength="20" autocomplete="off" value="${fromUrl}" pattern="[A-Za-z0-9_\\-]{0,20}">
           <small class="muted">只能用英文字母、數字、- 和 _。請勿輸入姓名。 / Letters, digits, - and _ only. Do not enter your name.</small>
         </label>
