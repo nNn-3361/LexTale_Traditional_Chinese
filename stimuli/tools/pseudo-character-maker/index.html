@@ -166,7 +166,7 @@ details summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
               <label class="check"><input id="lock" type="checkbox"> 鎖定長寬比</label>
               <button id="resetMove">此部件置中原大小</button>
               <button id="fitSize" title="把整個字等比例縮放、置中到參考框（真字的中位大小）">校正字的大小</button>
-              <button id="calWeight" title="依目前的寬高比例換字重，讓兩個部件的筆畫粗細接近真字">校正筆畫粗細</button>
+              <button id="calWeight" title="量部件現在畫出來的筆畫粗細，換字重讓它接近真字（參考字的中位粗細）；重複按結果不變">校正筆畫粗細</button>
               <label class="check"><input id="showFrame" type="checkbox" checked> 顯示參考框</label>
               <div class="note" id="moveInfo" style="flex-basis:100%;text-align:center"></div>
             </div>
@@ -541,8 +541,9 @@ function refresh() {
   $('sx').value = pc(m.sx); $('sy').value = pc(m.sy);
   $('sx-l').textContent = `寬 ${pc(m.sx)}%`; $('sy-l').textContent = `高 ${pc(m.sy)}%`;
   $('selA').setAttribute('aria-pressed', state.sel === 'A'); $('selB').setAttribute('aria-pressed', state.sel === 'B');
+  const ratio = {}; for (const k of KS) ratio[k] = partStroke(it, k);
   $('moveInfo').textContent = KS.map(k => {
-    const e = state.ed[k], v = e.pos, r = strokeRatio(e.weight || 400, v);
+    const e = state.ed[k], v = e.pos, r = ratio[k];
     return `${k}：寬 ${pc(v.sx)}%、高 ${pc(v.sy)}%、字重 ${e.weight || 400}` + (r ? `、筆畫約為真字的 ${pc(r)}%` : '');
   }).join('　') + '。調整一個部件不會改變另一個。';
   // One source may be left empty, to adjust one part at a time; an item needs both to be added to the list.
@@ -563,7 +564,7 @@ function refresh() {
   // the automatic layout itself squeezes a part a little along the axis, so only a clear difference is flagged
   if (KS.some(k => { const v = state.ed[k].pos; return Math.max(v.sx, v.sy) / Math.min(v.sx, v.sy) > 1.2; })) warns.push('寬高比例差很多，筆畫粗細可能和真字不一致');
   $('undoErase').disabled = $('clearErase').disabled = !state.erase.length;
-  for (const k of KS) { const e = state.ed[k], r = strokeRatio(e.weight || 400, e.pos); if (ch(k) && r && Math.abs(r - 1) > 0.15) warns.push(`部件 ${k} 的筆畫約為真字的 ${Math.round(r * 100)}%，可按「校正筆畫粗細」`); }
+  for (const k of KS) { const r = ratio[k]; if (ch(k) && r && Math.abs(r - 1) > 0.15) warns.push(`部件 ${k} 的筆畫約為真字的 ${Math.round(r * 100)}%，可按「校正筆畫粗細」`); }
   if (one) warns.push(`${it.a ? 'B' : 'A'} 字是空的：可以先調好部件 ${it.a ? 'A' : 'B'}，兩個字都填了才能加入清單`);
   w.innerHTML = '';
   for (const t of warns) { const s = document.createElement('span'); s.className = 'chip warn'; s.textContent = t; w.append(s); }
@@ -705,55 +706,73 @@ async function rerenderAll() {
 const refChars = () => { const r = [...new Set(state.items.filter(i => i.kind === 'real').map(i => i.ch))]; return r.length >= 10 ? r.join('') : REF_CHARS; };
 const refCache = new Map(), refPending = new Map(); // per font + reference characters: { frame, table }
 const median = a => { const b = a.slice().sort((p, q) => p - q), n = b.length; return n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2; };
-// average stroke width of a glyph in pixels, estimated as 2 x ink area / ink outline length
+// Typical stroke width of a glyph in pixels: for every ink pixel, the shorter of its horizontal and vertical ink runs
+// (across a horizontal stroke the vertical run is the stroke's thickness, and the other way round), then the median.
+// Unlike ink area / outline length, this does not count stroke ends, so parts made of many short strokes are not
+// measured as thinner than they look.
 function strokeWidth(c) {
-  const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, S, S).data, on = i => d[i * 4 + 3] > 127;
-  let A = 0, P = 0;
-  for (let y = 1; y < S - 1; y++) for (let x = 1; x < S - 1; x++) { const i = y * S + x; if (!on(i)) continue; A++; if (!on(i - 1)) P++; if (!on(i + 1)) P++; if (!on(i - S)) P++; if (!on(i + S)) P++; }
-  return P ? 2 * A / P : 0;
+  const d = c.getContext('2d', { willReadFrequently: true }).getImageData(0, 0, S, S).data, h = new Uint16Array(S * S), v = new Uint16Array(S * S);
+  const on = i => d[i * 4 + 3] > 127;
+  for (let y = 0; y < S; y++) for (let x = 0; x < S;) { // horizontal runs
+    if (!on(y * S + x)) { x++; continue; }
+    let e = x; while (e < S && on(y * S + e)) e++;
+    for (let i = x; i < e; i++) h[y * S + i] = e - x; x = e;
+  }
+  for (let x = 0; x < S; x++) for (let y = 0; y < S;) { // vertical runs
+    if (!on(y * S + x)) { y++; continue; }
+    let e = y; while (e < S && on(e * S + x)) e++;
+    for (let i = y; i < e; i++) v[i * S + x] = e - y; y = e;
+  }
+  const hist = new Uint32Array(S + 1); let n = 0;
+  for (let i = 0; i < S * S; i++) if (h[i]) { hist[Math.min(h[i], v[i])]++; n++; }
+  if (!n) return 0;
+  for (let w = 1, t = 0; w <= S; w++) { if ((t + hist[w]) * 2 >= n) return w - 0.5 + (n / 2 - t) / hist[w]; t += hist[w]; } // median, interpolated within the 1-pixel bin
+  return 0;
 }
-// Reference frame (median ink box of the reference characters at weight 400) and a table of
-// stroke width by weight, relative to weight 400, averaged over the reference characters.
+// Reference frame (median ink box of the reference characters at weight 400) and the median stroke width
+// of the reference characters at weight 400 (the target for "校正筆畫粗細").
 function prepareRef() {
   const chars = refChars(), key = state.font + '|' + chars; if (refCache.has(key)) return Promise.resolve(refCache.get(key));
   if (!refPending.has(key)) refPending.set(key, measureRef(chars, key).finally(() => refPending.delete(key)));
   return refPending.get(key);
 }
 async function measureRef(chars, key) {
-  const [lo, hi] = WRANGE[state.font], ws = []; for (let w = lo; w <= hi; w += 50) ws.push(w);
-  await ensureFont(chars, ws);
+  await ensureFont(chars);
   const boxes = [...chars].map(ch => inkBox(glyph(ch))).filter(Boolean);
   const frame = [0, 1, 2, 3].map(i => median(boxes.map(b => b[i])));
-  const base = [...chars].map(ch => strokeWidth(glyph(ch)));
-  const table = ws.map(w => [w, [...chars].reduce((t, ch, i) => t + (base[i] ? strokeWidth(glyph(ch, w)) / base[i] : 1), 0) / chars.length]);
-  const r = { frame, table }; refCache.set(key, r); refresh(); return r;
+  const stroke = median([...chars].map(ch => strokeWidth(glyph(ch))).filter(Boolean));
+  const r = { frame, stroke }; refCache.set(key, r); refresh(); return r;
 }
 const refNow = () => refCache.get(state.font + '|' + refChars());
 const refFrame = () => { const r = refNow(); return r && r.frame; };
-// stroke width of a part relative to a real character: weight factor x the average of width and height scale
-function strokeRatio(w, pos) {
-  const r = refNow(); if (!r) return null;
-  const t = r.table; let f = w <= t[0][0] ? t[0][1] : t[t.length - 1][1];
-  for (let i = 1; i < t.length; i++) if (w >= t[i - 1][0] && w <= t[i][0]) { const [w0, f0] = t[i - 1], [w1, f1] = t[i]; f = f0 + (f1 - f0) * (w - w0) / (w1 - w0); break; }
-  return f * (pos.sx + pos.sy) / 2;
+// Stroke width of part k of an item as it is drawn on the result (its crop, weight w, place and eraser strokes),
+// relative to the median stroke width of the reference characters. Measured on the drawn part itself, so the
+// source character's own stroke thickness and any scaling are both taken into account.
+function partStroke(it, k, w = weightOf(it, k)) {
+  const r = refNow(), c = k === 'A' ? it.a : it.b; if (!r || !r.stroke || !c) return null;
+  const sw = strokeWidth(partLayer(kept(c, cropOf(it, k), it.cutMode || 'line', w), posOf(it, k), it['erase' + k]));
+  return sw ? sw / r.stroke : null;
 }
-// the weight whose strokes, at this scale, come closest to a real character's (limited to the font's range)
-function weightFor(pos) {
-  const r = refNow(); if (!r) return 400;
-  const want = 2 / (pos.sx + pos.sy), t = r.table;
-  if (want <= t[0][1]) return t[0][0];
-  if (want >= t[t.length - 1][1]) return t[t.length - 1][0];
-  for (let i = 1; i < t.length; i++) if (t[i][1] >= want) { const [w0, f0] = t[i - 1], [w1, f1] = t[i]; return Math.round((w0 + (w1 - w0) * (want - f0) / (f1 - f0)) / 10) * 10; }
-  return 400;
+// The weight (in steps of 10, within the font's range) whose drawn strokes come closest to a real character's.
+// It depends only on the source glyph, crop, place and eraser strokes, never on the current weight,
+// so pressing the button again gives the same result.
+function weightFor(it, k) {
+  const [lo, hi] = WRANGE[state.font], f = w => partStroke(it, k, w);
+  let a = lo / 10, b = hi / 10; // stroke width grows with weight: find the lightest weight that reaches the target
+  if ((f(hi) || 0) < 1) return hi;
+  while (a < b) { const m = (a + b) >> 1; if ((f(m * 10) || 0) >= 1) b = m; else a = m + 1; }
+  const w = a * 10;
+  return w > lo && Math.abs(f(w - 10) - 1) < Math.abs(f(w) - 1) ? w - 10 : w;
 }
 async function calibrateWeight() {
   await prepareRef();
-  const ws = {}; for (const k of KS) if (ch(k)) ws[k] = weightFor(state.ed[k].pos);
-  await ensureFont($('inA').value + $('inB').value, Object.values(ws));
+  const [lo, hi] = WRANGE[state.font], all = []; for (let w = lo; w <= hi; w += 100) all.push(w);
+  await ensureFont($('inA').value + $('inB').value, all);
+  const it = cur(), ws = {}; for (const k of KS) if (ch(k)) ws[k] = weightFor(it, k);
   for (const k in ws) state.ed[k].weight = ws[k];
-  const lim = KS.filter(k => ch(k) && Math.abs(strokeRatio(ws[k], state.ed[k].pos) - 1) > 0.05);
+  const now = cur(), lim = KS.filter(k => ch(k) && Math.abs((partStroke(now, k) || 1) - 1) > 0.05);
   refresh();
-  status(lim.length ? `部件 ${lim.join('、')} 縮放太多，字重已到上下限，筆畫無法完全校正。` : '已依目前的大小校正筆畫粗細。');
+  status(lim.length ? `部件 ${lim.join('、')} 的字重已到上下限，筆畫無法完全校正。` : '已依目前的大小校正筆畫粗細。');
 }
 // Scale the whole character (both parts together, keeping their proportions) and centre it in the reference frame.
 async function fitSize() {
