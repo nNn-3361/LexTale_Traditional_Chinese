@@ -2,6 +2,7 @@
 
 One line per change: date, summary, pull request. Newest first.
 
+- 2026-11-25: Pseudo-character maker: "校正筆畫粗細" now measures each part as drawn and matches it to the real characters' median stroke width, instead of estimating from the scale only, which often made parts too thick; pressing it again gives the same result. Stored items render unchanged. (#40)
 - 2026-11-24: Item analysis page now reads the latest runs from the results sheet automatically (Apps Script GET, participant codes left out), so anyone with the link sees the data; the Apps Script must be redeployed. (#39)
 - 2026-11-24: Added the team's seventh batch of 5 pseudo-characters as P125-P129; three already exist in Unicode and were left out, so the set has 90 real and 45 pseudo items. (#38)
 - 2026-11-24: Added the team's sixth batch of 10 pseudo-characters as P115-P124; six already exist in Unicode and were left out, so the set has 90 real and 43 pseudo items. (#37)
